@@ -1,5 +1,43 @@
 import { NodeConnectionTypes, type INodeType, type INodeTypeDescription } from 'n8n-workflow';
 
+// Helper function to handle array parameters in query strings
+function handleArrayParameter(
+	requestOptions: any,
+	paramName: string,
+	options?: { encodeValues?: boolean },
+): void {
+	const paramKey = `${paramName}[]`;
+	if (!requestOptions.qs || !requestOptions.qs[paramKey]) {
+		return;
+	}
+
+	const paramValue = requestOptions.qs[paramKey];
+	delete requestOptions.qs[paramKey];
+
+	let values: string[] = [];
+
+	// Handle array values (e.g., from multiOptions)
+	if (Array.isArray(paramValue) && paramValue.length > 0) {
+		values = paramValue.map((v) => String(v));
+	}
+	// Handle comma-separated string values
+	else if (paramValue && String(paramValue).trim()) {
+		values = String(paramValue)
+			.split(',')
+			.map((id) => id.trim())
+			.filter((id) => id);
+	}
+
+	// Append to URL if we have values
+	if (values.length > 0) {
+		const encodedValues = options?.encodeValues
+			? values.map((v) => encodeURIComponent(v))
+			: values;
+		const params = encodedValues.map((v) => `${paramKey}=${v}`).join('&');
+		requestOptions.url = requestOptions.url + (requestOptions.url.includes('?') ? '&' : '?') + params;
+	}
+}
+
 export class Kordon implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Kordon',
@@ -55,6 +93,10 @@ export class Kordon implements INodeType {
 						value: 'requirement',
 					},
 					{
+						name: 'Risk',
+						value: 'risk',
+					},
+					{
 						name: 'User',
 						value: 'user',
 					},
@@ -77,6 +119,28 @@ export class Kordon implements INodeType {
 				},
 				options: [
 					{
+						name: 'Get',
+						value: 'get',
+						description: 'Get a single control',
+						action: 'Get a control',
+						routing: {
+							request: {
+								method: 'GET',
+								url: '=/controls/{{$parameter.controlId}}',
+							},
+							output: {
+								postReceive: [
+									{
+										type: 'rootProperty',
+										properties: {
+											property: 'data',
+										},
+									},
+								],
+							},
+						},
+					},
+					{
 						name: 'Get Many',
 						value: 'getMany',
 						description: 'Get a list of controls',
@@ -85,59 +149,11 @@ export class Kordon implements INodeType {
 							send: {
 								preSend: [
 									async function (this, requestOptions) {
-										// Handle kind[] array parameter - build URL manually
-										if (requestOptions.qs && requestOptions.qs['kind[]']) {
-											const kinds = requestOptions.qs['kind[]'];
-											delete requestOptions.qs['kind[]'];
-
-											// Append kind[] parameters to URL
-											if (Array.isArray(kinds) && kinds.length > 0) {
-												const kindParams = kinds.map((k) => `kind[]=${String(k)}`).join('&');
-												requestOptions.url = requestOptions.url + (requestOptions.url.includes('?') ? '&' : '?') + kindParams;
-											}
-										}
-
-										// Handle state[] array parameter - build URL manually
-										if (requestOptions.qs && requestOptions.qs['state[]']) {
-											const states = requestOptions.qs['state[]'];
-											delete requestOptions.qs['state[]'];
-
-											// Append state[] parameters to URL
-											if (Array.isArray(states) && states.length > 0) {
-												const stateParams = states.map((s) => `state[]=${String(s)}`).join('&');
-												requestOptions.url = requestOptions.url + (requestOptions.url.includes('?') ? '&' : '?') + stateParams;
-											}
-										}
-
-										// Handle owner[] array parameter - split comma-separated IDs
-										if (requestOptions.qs && requestOptions.qs['owner[]']) {
-											const ownerInput = requestOptions.qs['owner[]'];
-											delete requestOptions.qs['owner[]'];
-
-											// Split comma-separated IDs and append as owner[] parameters
-											if (ownerInput && String(ownerInput).trim()) {
-												const owners = String(ownerInput).split(',').map((id) => id.trim()).filter((id) => id);
-												if (owners.length > 0) {
-													const ownerParams = owners.map((o) => `owner[]=${o}`).join('&');
-													requestOptions.url = requestOptions.url + (requestOptions.url.includes('?') ? '&' : '?') + ownerParams;
-												}
-											}
-										}
-
-										// Handle labels[] array parameter - split comma-separated values (supports "none" and label IDs)
-										if (requestOptions.qs && requestOptions.qs['labels[]']) {
-											const labelsInput = requestOptions.qs['labels[]'];
-											delete requestOptions.qs['labels[]'];
-
-											// Split comma-separated values and append as labels[] parameters
-											if (labelsInput && String(labelsInput).trim()) {
-												const labels = String(labelsInput).split(',').map((id) => id.trim()).filter((id) => id);
-												if (labels.length > 0) {
-													const labelParams = labels.map((l) => `labels[]=${l}`).join('&');
-													requestOptions.url = requestOptions.url + (requestOptions.url.includes('?') ? '&' : '?') + labelParams;
-												}
-											}
-										}
+										// Handle array parameters
+										handleArrayParameter(requestOptions, 'kind');
+										handleArrayParameter(requestOptions, 'state');
+										handleArrayParameter(requestOptions, 'owner');
+										handleArrayParameter(requestOptions, 'labels');
 
 										// Log request details for debugging
 										this.logger.info('=== Kordon API Request ===');
@@ -160,507 +176,869 @@ export class Kordon implements INodeType {
 									per_page: '={{ $parameter.returnAll ? 100 : $parameter.limit }}',
 								},
 							},
-			output: {
-				postReceive: [
-					{
-						type: 'rootProperty',
-						properties: {
-							property: 'data',
+							output: {
+								postReceive: [
+									{
+										type: 'rootProperty',
+										properties: {
+											property: 'data',
+										},
+									},
+								],
+							},
+							operations: {
+								pagination: {
+									type: 'offset',
+									properties: {
+										limitParameter: 'per_page',
+										offsetParameter: 'page',
+										pageSize: 100,
+										rootProperty: 'data',
+										type: 'query',
+									},
+								},
+							},
 						},
 					},
-				],
-			},
-			operations: {
-				pagination: {
-					type: 'offset',
-					properties: {
-						limitParameter: 'per_page',
-						offsetParameter: 'page',
-						pageSize: 100,
-						rootProperty: 'data',
-						type: 'query',
-					},
-				},
-			},
-						},
-},
 				],
 				default: 'getMany',
 			},
 
-// ------------------------
-// Control: Get Many - Options
-// ------------------------
-{
-	displayName: 'Return All',
-		name: 'returnAll',
-			type: 'boolean',
+			// ------------------------
+			// Control: Get - Fields
+			// ------------------------
+			{
+				displayName: 'Control ID',
+				name: 'controlId',
+				type: 'string',
+				required: true,
 				displayOptions: {
-		show: {
-			resource: ['control'],
-				operation: ['getMany'],
+					show: {
+						resource: ['control'],
+						operation: ['get'],
 					},
-	},
-				default: false,
-		description: 'Whether to return all results or only up to a given limit',
+				},
+				default: '',
+				placeholder: 'e.g., 550e8400-e29b-41d4-a716-446655440000',
+				description: 'The ID of the control to retrieve',
 			},
-{
-	displayName: 'Limit',
-		name: 'limit',
-			type: 'number',
+
+			// ------------------------
+			// Control: Get Many - Options
+			// ------------------------
+			{
+				displayName: 'Return All',
+				name: 'returnAll',
+				type: 'boolean',
 				displayOptions: {
-		show: {
-			resource: ['control'],
-				operation: ['getMany'],
-					returnAll: [false],
+					show: {
+						resource: ['control'],
+						operation: ['getMany'],
 					},
-	},
-	typeOptions: {
-		minValue: 1,
+				},
+				default: false,
+				description: 'Whether to return all results or only up to a given limit',
+			},
+			{
+				displayName: 'Limit',
+				name: 'limit',
+				type: 'number',
+				displayOptions: {
+					show: {
+						resource: ['control'],
+						operation: ['getMany'],
+						returnAll: [false],
+					},
+				},
+				typeOptions: {
+					minValue: 1,
 				},
 				default: 50,
-		description: 'Max number of results to return',
+				description: 'Max number of results to return',
 			},
-{
-	displayName: 'Options',
-		name: 'options',
-			type: 'collection',
+			{
+				displayName: 'Options',
+				name: 'options',
+				type: 'collection',
 				placeholder: 'Add Option',
-			default: { },
-	displayOptions: {
-		show: {
-			resource: ['control'],
-				operation: ['getMany'],
+				default: {},
+				displayOptions: {
+					show: {
+						resource: ['control'],
+						operation: ['getMany'],
+					},
 				},
-	},
-	options: [
-		{
-			displayName: 'Kind',
-			name: 'kind',
-			type: 'multiOptions',
-			options: [
-				{
-					name: 'Policy',
-					value: 'policy',
-				},
-				{
-					name: 'Procedure',
-					value: 'procedure',
-				},
-				{
-					name: 'Technical',
-					value: 'technical',
-				},
-			],
-			default: [],
-			description: 'Filter controls by type',
-		},
-		{
-			displayName: 'State',
-			name: 'state',
-			type: 'multiOptions',
-			options: [
-				{
-					name: 'Not Implemented',
-					value: 'not_implemented',
-				},
-				{
-					name: 'Failing',
-					value: 'failing',
-				},
-				{
-					name: 'Implemented',
-					value: 'implemented',
-				},
-			],
-			default: [],
-			description: 'Filter controls by implementation state',
-		},
-		{
-			displayName: 'Owner ID(s)',
-			name: 'owner',
-			type: 'string',
-			default: '',
-			placeholder: 'e.g., 0f27df97-00b0-44ea-b8f0-522ad901ac37',
-			description: 'Filter by owner ID. For multiple owners, separate with commas.',
-		},
-		{
-			displayName: 'Labels',
-			name: 'labels',
-			type: 'string',
-			default: '',
-			placeholder: 'e.g., none, 8cc259df-01fe-43c6-80ef-d0449d78afc1',
-			description: 'Filter by labels. Use "none" for items without labels, or enter label IDs separated by commas.',
-		},
-	],		},
-// ------------------------
-// User - Operation
-// ------------------------
-{
-	displayName: 'Operation',
-		name: 'operation',
-			type: 'options',
+				options: [
+					{
+						displayName: 'Kind',
+						name: 'kind',
+						type: 'multiOptions',
+						options: [
+							{
+								name: 'Policy',
+								value: 'policy',
+							},
+							{
+								name: 'Procedure',
+								value: 'procedure',
+							},
+							{
+								name: 'Technical',
+								value: 'technical',
+							},
+						],
+						default: [],
+						description: 'Filter controls by type',
+					},
+					{
+						displayName: 'State',
+						name: 'state',
+						type: 'multiOptions',
+						options: [
+							{
+								name: 'Not Implemented',
+								value: 'not_implemented',
+							},
+							{
+								name: 'Failing',
+								value: 'failing',
+							},
+							{
+								name: 'Implemented',
+								value: 'implemented',
+							},
+						],
+						default: [],
+						description: 'Filter controls by implementation state',
+					},
+					{
+						displayName: 'Owner ID(s)',
+						name: 'owner',
+						type: 'string',
+						default: '',
+						placeholder: 'e.g., 0f27df97-00b0-44ea-b8f0-522ad901ac37',
+						description: 'Filter by owner ID. For multiple owners, separate with commas.',
+					},
+					{
+						displayName: 'Labels',
+						name: 'labels',
+						type: 'string',
+						default: '',
+						placeholder: 'e.g., none, 8cc259df-01fe-43c6-80ef-d0449d78afc1',
+						description: 'Filter by labels. Use "none" for items without labels, or enter label IDs separated by commas.',
+					},
+				],
+			},
+			// ------------------------
+			// User - Operation
+			// ------------------------
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
 				noDataExpression: true,
-					displayOptions: {
-		show: {
-			resource: ['user'],
+				displayOptions: {
+					show: {
+						resource: ['user'],
 					},
-	},
-	options: [
-		{
-			name: 'Get',
-			value: 'get',
-			description: 'Get a single user',
-			action: 'Get a user',
-			routing: {
-				request: {
-					method: 'GET',
-					url: '=/users/{{$parameter.userId}}',
 				},
-				output: {
-					postReceive: [
-						{
-							type: 'rootProperty',
-							properties: {
-								property: 'data',
+				options: [
+					{
+						name: 'Get',
+						value: 'get',
+						description: 'Get a single user',
+						action: 'Get a user',
+						routing: {
+							request: {
+								method: 'GET',
+								url: '=/users/{{$parameter.userId}}',
+							},
+							output: {
+								postReceive: [
+									{
+										type: 'rootProperty',
+										properties: {
+											property: 'data',
+										},
+									},
+								],
 							},
 						},
-					],
-				},
-			},
-		},
-		{
-			name: 'Get Many',
-			value: 'getMany',
-			description: 'Get a list of users',
-			action: 'Get many users',
-			routing: {
-				request: {
-					method: 'GET',
-					url: '/users',
-					qs: {
-						per_page: '={{ $parameter.returnAll ? 100 : $parameter.limit }}',
 					},
-				},
-				output: {
-					postReceive: [
-						{
-							type: 'rootProperty',
-							properties: {
-								property: 'data',
+					{
+						name: 'Get Many',
+						value: 'getMany',
+						description: 'Get a list of users',
+						action: 'Get many users',
+						routing: {
+							request: {
+								method: 'GET',
+								url: '/users',
+								qs: {
+									per_page: '={{ $parameter.returnAll ? 100 : $parameter.limit }}',
+								},
+							},
+							output: {
+								postReceive: [
+									{
+										type: 'rootProperty',
+										properties: {
+											property: 'data',
+										},
+									},
+								],
+							},
+							operations: {
+								pagination: {
+									type: 'offset',
+									properties: {
+										limitParameter: 'per_page',
+										offsetParameter: 'page',
+										pageSize: 100,
+										rootProperty: 'data',
+										type: 'query',
+									},
+								},
 							},
 						},
-					],
-				},
-				operations: {
-					pagination: {
-						type: 'offset',
-						properties: {
-							limitParameter: 'per_page',
-							offsetParameter: 'page',
-							pageSize: 100,
-							rootProperty: 'data',
-							type: 'query',
-						},
 					},
-				},
-			},
-		},
-	],
+				],
 				default: 'getMany',
 			},
 
-// ------------------------
-// User: Get - Fields
-// ------------------------
-{
-	displayName: 'User ID',
-		name: 'userId',
-			type: 'string',
+			// ------------------------
+			// User: Get - Fields
+			// ------------------------
+			{
+				displayName: 'User ID',
+				name: 'userId',
+				type: 'string',
 				required: true,
-					displayOptions: {
-		show: {
-			resource: ['user'],
-				operation: ['get'],
+				displayOptions: {
+					show: {
+						resource: ['user'],
+						operation: ['get'],
 					},
-	},
+				},
 				default: '',
-		placeholder: '2a7c8cf0-a4c0-4cd5-83f4-0a5ebdf1fa83',
-			description: 'The ID of the user to retrieve',
+				placeholder: '2a7c8cf0-a4c0-4cd5-83f4-0a5ebdf1fa83',
+				description: 'The ID of the user to retrieve',
 			},
 
-// ------------------------
-// User: Get Many - Options
-// ------------------------
-{
-	displayName: 'Return All',
-		name: 'returnAll',
-			type: 'boolean',
+			// ------------------------
+			// User: Get Many - Options
+			// ------------------------
+			{
+				displayName: 'Return All',
+				name: 'returnAll',
+				type: 'boolean',
 				displayOptions: {
-		show: {
-			resource: ['user'],
-				operation: ['getMany'],
+					show: {
+						resource: ['user'],
+						operation: ['getMany'],
 					},
-	},
+				},
 				default: false,
-		description: 'Whether to return all results or only up to a given limit',
+				description: 'Whether to return all results or only up to a given limit',
 			},
-{
-	displayName: 'Limit',
-		name: 'limit',
-			type: 'number',
+			{
+				displayName: 'Limit',
+				name: 'limit',
+				type: 'number',
 				displayOptions: {
-		show: {
-			resource: ['user'],
-				operation: ['getMany'],
-					returnAll: [false],
+					show: {
+						resource: ['user'],
+						operation: ['getMany'],
+						returnAll: [false],
 					},
-	},
-	typeOptions: {
-		minValue: 1,
+				},
+				typeOptions: {
+					minValue: 1,
 				},
 				default: 50,
-		description: 'Max number of results to return',
+				description: 'Max number of results to return',
 			},
 
-// ------------------------
-// Framework - Operation
-// ------------------------
-{
-	displayName: 'Operation',
-		name: 'operation',
-			type: 'options',
+			// ------------------------
+			// Framework - Operation
+			// ------------------------
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
 				noDataExpression: true,
-					displayOptions: {
-		show: {
-			resource: ['regulation'],
+				displayOptions: {
+					show: {
+						resource: ['regulation'],
 					},
-	},
-	options: [
-		{
-			name: 'Get',
-			value: 'get',
-			description: 'Get a single framework',
-			action: 'Get a framework',
-			routing: {
-				request: {
-					method: 'GET',
-					url: '=/regulations/{{$parameter.frameworkId}}',
 				},
-				output: {
-					postReceive: [
-						{
-							type: 'rootProperty',
-							properties: {
-								property: 'data',
+				options: [
+					{
+						name: 'Get',
+						value: 'get',
+						description: 'Get a single framework',
+						action: 'Get a framework',
+						routing: {
+							request: {
+								method: 'GET',
+								url: '=/regulations/{{$parameter.frameworkId}}',
+							},
+							output: {
+								postReceive: [
+									{
+										type: 'rootProperty',
+										properties: {
+											property: 'data',
+										},
+									},
+								],
 							},
 						},
-					],
-				},
-			},
-		},
-		{
-			name: 'Get Many',
-			value: 'getMany',
-			description: 'Get a list of frameworks',
-			action: 'Get many frameworks',
-			routing: {
-				request: {
-					method: 'GET',
-					url: '/regulations',
-					qs: {
-						per_page: '={{ $parameter.returnAll ? 100 : $parameter.limit }}',
 					},
-				},
-				output: {
-					postReceive: [
-						{
-							type: 'rootProperty',
-							properties: {
-								property: 'data',
+					{
+						name: 'Get Many',
+						value: 'getMany',
+						description: 'Get a list of frameworks',
+						action: 'Get many frameworks',
+						routing: {
+							request: {
+								method: 'GET',
+								url: '/regulations',
+								qs: {
+									per_page: '={{ $parameter.returnAll ? 100 : $parameter.limit }}',
+								},
+							},
+							output: {
+								postReceive: [
+									{
+										type: 'rootProperty',
+										properties: {
+											property: 'data',
+										},
+									},
+								],
+							},
+							operations: {
+								pagination: {
+									type: 'offset',
+									properties: {
+										limitParameter: 'per_page',
+										offsetParameter: 'page',
+										pageSize: 100,
+										rootProperty: 'data',
+										type: 'query',
+									},
+								},
 							},
 						},
-					],
-				},
-				operations: {
-					pagination: {
-						type: 'offset',
-						properties: {
-							limitParameter: 'per_page',
-							offsetParameter: 'page',
-							pageSize: 100,
-							rootProperty: 'data',
-							type: 'query',
-						},
 					},
-				},
-			},
-		},
-	],
+				],
 				default: 'getMany',
 			},
 
-// ------------------------
-// Framework: Get - Fields
-// ------------------------
-{
-	displayName: 'Framework ID',
-		name: 'frameworkId',
-			type: 'string',
+			// ------------------------
+			// Framework: Get - Fields
+			// ------------------------
+			{
+				displayName: 'Framework ID',
+				name: 'frameworkId',
+				type: 'string',
 				required: true,
-					displayOptions: {
-		show: {
-			resource: ['regulation'],
-				operation: ['get'],
+				displayOptions: {
+					show: {
+						resource: ['regulation'],
+						operation: ['get'],
 					},
-	},
+				},
 				default: '',
-		placeholder: 'b698a0ed-ad82-4468-900e-3b6eb3f5eb9b',
-			description: 'The ID of the framework to retrieve',
+				placeholder: 'b698a0ed-ad82-4468-900e-3b6eb3f5eb9b',
+				description: 'The ID of the framework to retrieve',
 			},
 
-// ------------------------
-// Framework: Get Many - Options
-// ------------------------
-{
-	displayName: 'Return All',
-		name: 'returnAll',
-			type: 'boolean',
+			// ------------------------
+			// Framework: Get Many - Options
+			// ------------------------
+			{
+				displayName: 'Return All',
+				name: 'returnAll',
+				type: 'boolean',
 				displayOptions: {
-		show: {
-			resource: ['regulation'],
-				operation: ['getMany'],
+					show: {
+						resource: ['regulation'],
+						operation: ['getMany'],
 					},
-	},
+				},
 				default: false,
-		description: 'Whether to return all results or only up to a given limit',
+				description: 'Whether to return all results or only up to a given limit',
 			},
-{
-	displayName: 'Limit',
-		name: 'limit',
-			type: 'number',
+			{
+				displayName: 'Limit',
+				name: 'limit',
+				type: 'number',
 				displayOptions: {
-		show: {
-			resource: ['regulation'],
-				operation: ['getMany'],
-					returnAll: [false],
+					show: {
+						resource: ['regulation'],
+						operation: ['getMany'],
+						returnAll: [false],
 					},
-	},
-	typeOptions: {
-		minValue: 1,
+				},
+				typeOptions: {
+					minValue: 1,
 				},
 				default: 50,
-		description: 'Max number of results to return',
+				description: 'Max number of results to return',
 			},
 
-// ------------------------
-// Requirement - Operation
-// ------------------------
-{
-	displayName: 'Operation',
-		name: 'operation',
-			type: 'options',
+			// ------------------------
+			// Risk - Operation
+			// ------------------------
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
 				noDataExpression: true,
-					displayOptions: {
-		show: {
-			resource: ['requirement'],
-					},
-	},
-	options: [
-		{
-			name: 'Get Many',
-			value: 'getMany',
-			description: 'Get a list of requirements',
-			action: 'Get many requirements',
-			routing: {
-				request: {
-					method: 'GET',
-					url: '/requirements',
-					qs: {
-						'frameworks[]': '={{$parameter.frameworkId}}',
-						per_page: '={{ $parameter.returnAll ? 100 : $parameter.limit }}',
+				displayOptions: {
+					show: {
+						resource: ['risk'],
 					},
 				},
-				output: {
-					postReceive: [
-						{
-							type: 'rootProperty',
-							properties: {
-								property: 'data',
+				options: [
+					{
+						name: 'Get',
+						value: 'get',
+						description: 'Get a single risk',
+						action: 'Get a risk',
+						routing: {
+							request: {
+								method: 'GET',
+								url: '=/risks/{{$parameter.riskId}}',
+							},
+							output: {
+								postReceive: [
+									{
+										type: 'rootProperty',
+										properties: {
+											property: 'data',
+										},
+									},
+								],
 							},
 						},
-					],
-				},
-				operations: {
-					pagination: {
-						type: 'offset',
-						properties: {
-							limitParameter: 'per_page',
-							offsetParameter: 'page',
-							pageSize: 100,
-							rootProperty: 'data',
-							type: 'query',
+					},
+					{
+						name: 'Get Many',
+						value: 'getMany',
+						description: 'Get a list of risks',
+						action: 'Get many risks',
+						routing: {
+							send: {
+								preSend: [
+									async function (this, requestOptions) {
+										// Handle array parameters
+										handleArrayParameter(requestOptions, 'state');
+										handleArrayParameter(requestOptions, 'owner');
+										handleArrayParameter(requestOptions, 'manager');
+										handleArrayParameter(requestOptions, 'labels'); handleArrayParameter(requestOptions, 'impact');
+										handleArrayParameter(requestOptions, 'probability');
+										// Log request details for debugging
+										this.logger.info('=== Kordon API Request ===');
+										this.logger.info('URL: ' + requestOptions.url);
+										this.logger.info('Method: ' + requestOptions.method);
+										this.logger.info('Query Params: ' + JSON.stringify(requestOptions.qs));
+										this.logger.info('========================');
+										return requestOptions;
+									},
+								],
+							},
+							request: {
+								method: 'GET',
+								url: '/risks',
+								qs: {
+									'state[]': '={{$parameter.options.state}}',
+									'owner[]': '={{$parameter.options.owner}}',
+									'manager[]': '={{$parameter.options.manager}}',
+									'labels[]': '={{$parameter.options.labels}}', 'impact[]': '={{$parameter.options.impact}}',
+									'probability[]': '={{$parameter.options.probability}}', per_page: '={{ $parameter.returnAll ? 100 : $parameter.limit }}',
+								},
+							},
+							output: {
+								postReceive: [
+									{
+										type: 'rootProperty',
+										properties: {
+											property: 'data',
+										},
+									},
+								],
+							},
+							operations: {
+								pagination: {
+									type: 'offset',
+									properties: {
+										limitParameter: 'per_page',
+										offsetParameter: 'page',
+										pageSize: 100,
+										rootProperty: 'data',
+										type: 'query',
+									},
+								},
+							},
 						},
 					},
-				},
-			},
-		},
-	],
+				],
 				default: 'getMany',
 			},
 
-// ------------------------
-// Requirement: Get Many - Fields
-// ------------------------
-{
-	displayName: 'Framework ID',
-		name: 'frameworkId',
-			type: 'string',
+			// ------------------------
+			// Risk: Get - Fields
+			// ------------------------
+			{
+				displayName: 'Risk ID',
+				name: 'riskId',
+				type: 'string',
 				required: true,
-					displayOptions: {
-		show: {
-			resource: ['requirement'],
-				operation: ['getMany'],
+				displayOptions: {
+					show: {
+						resource: ['risk'],
+						operation: ['get'],
 					},
-	},
+				},
 				default: '',
-		placeholder: '023fb404-56f6-49cd-9379-dbf584d2eef8',
-			description: 'The ID of the framework to get requirements for',
+				placeholder: 'e.g., 550e8400-e29b-41d4-a716-446655440000',
+				description: 'The ID of the risk to retrieve',
 			},
 
-// ------------------------
-// Requirement: Get Many - Options
-// ------------------------
-{
-	displayName: 'Return All',
-		name: 'returnAll',
-			type: 'boolean',
+			// ------------------------
+			// Risk: Get Many - Options
+			// ------------------------
+			{
+				displayName: 'Return All',
+				name: 'returnAll',
+				type: 'boolean',
 				displayOptions: {
-		show: {
-			resource: ['requirement'],
-				operation: ['getMany'],
+					show: {
+						resource: ['risk'],
+						operation: ['getMany'],
 					},
-	},
+				},
 				default: false,
-		description: 'Whether to return all results or only up to a given limit',
+				description: 'Whether to return all results or only up to a given limit',
 			},
-{
-	displayName: 'Limit',
-		name: 'limit',
-			type: 'number',
+			{
+				displayName: 'Limit',
+				name: 'limit',
+				type: 'number',
 				displayOptions: {
-		show: {
-			resource: ['requirement'],
-				operation: ['getMany'],
-					returnAll: [false],
+					show: {
+						resource: ['risk'],
+						operation: ['getMany'],
+						returnAll: [false],
 					},
-	},
-	typeOptions: {
-		minValue: 1,
+				},
+				typeOptions: {
+					minValue: 1,
 				},
 				default: 50,
-		description: 'Max number of results to return',
+				description: 'Max number of results to return',
 			},
-		],
+			{
+				displayName: 'Options',
+				name: 'options',
+				type: 'collection',
+				placeholder: 'Add Option',
+				default: {},
+				displayOptions: {
+					show: {
+						resource: ['risk'],
+						operation: ['getMany'],
+					},
+				},
+				options: [
+					{
+						displayName: 'State',
+						name: 'state',
+						type: 'multiOptions',
+						options: [
+							{
+								name: 'Acceptable',
+								value: 'acceptable',
+							},
+							{
+								name: 'Needs Mitigation',
+								value: 'not_mitigated',
+							},
+						],
+						default: [],
+						description: 'Filter risks by state',
+					},
+					{
+						displayName: 'Owner ID(s)',
+						name: 'owner',
+						type: 'string',
+						default: '',
+						placeholder: 'e.g., fbe8dc76-b1a8-4ce2-866d-15f90c9a20f6',
+						description: 'Filter by owner ID. For multiple owners, separate with commas.',
+					},
+					{
+						displayName: 'Manager ID(s)',
+						name: 'manager',
+						type: 'string',
+						default: '',
+						placeholder: 'e.g., 33837287-85fe-462e-ac08-04db57145dc9',
+						description: 'Filter by manager ID. For multiple managers, separate with commas.',
+					},
+					{
+						displayName: 'Labels',
+						name: 'labels',
+						type: 'string',
+						default: '',
+						placeholder: 'e.g., none, 74a5222a-f559-486b-9201-10311d479d2c',
+						description: 'Filter by labels. Use "none" for items without labels, or enter label IDs separated by commas.',
+					},
+					{
+						displayName: 'Impact',
+						name: 'impact',
+						type: 'string',
+						default: '',
+						placeholder: 'e.g., 5, or 3,4,5',
+						description: 'Filter by impact level (0-10). For multiple values, separate with commas.',
+					},
+					{
+						displayName: 'Probability',
+						name: 'probability',
+						type: 'string',
+						default: '',
+						placeholder: 'e.g., 7, or 5,6,7',
+						description: 'Filter by probability level (0-10). For multiple values, separate with commas.',
+					},
+				],
+			},
+
+			// ------------------------
+			// Requirement - Operation
+			// ------------------------
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				displayOptions: {
+					show: {
+						resource: ['requirement'],
+					},
+				},
+				options: [
+					{
+						name: 'Get',
+						value: 'get',
+						description: 'Get a single requirement',
+						action: 'Get a requirement',
+						routing: {
+							request: {
+								method: 'GET',
+								url: '=/requirements/{{$parameter.requirementId}}',
+							},
+							output: {
+								postReceive: [
+									{
+										type: 'rootProperty',
+										properties: {
+											property: 'data',
+										},
+									},
+								],
+							},
+						},
+					},
+					{
+						name: 'Get Many',
+						value: 'getMany',
+						description: 'Get a list of requirements',
+						action: 'Get many requirements',
+						routing: {
+							send: {
+								preSend: [
+									async function (this, requestOptions) {
+										// Handle array parameters
+										handleArrayParameter(requestOptions, 'frameworks');
+										handleArrayParameter(requestOptions, 'applicability');
+										handleArrayParameter(requestOptions, 'chapter', { encodeValues: true });
+										handleArrayParameter(requestOptions, 'controls');
+										handleArrayParameter(requestOptions, 'labels');
+
+										// Log request details for debugging
+										this.logger.info('=== Kordon API Request ===');
+										this.logger.info('URL: ' + requestOptions.url);
+										this.logger.info('Method: ' + requestOptions.method);
+										this.logger.info('Query Params: ' + JSON.stringify(requestOptions.qs));
+										this.logger.info('========================');
+										return requestOptions;
+									},
+								],
+							},
+							request: {
+								method: 'GET',
+								url: '/requirements',
+								qs: {
+									'frameworks[]': '={{$parameter.options.frameworkId}}',
+									'applicability[]': '={{$parameter.options.applicability}}',
+									'chapter[]': '={{$parameter.options.chapter}}',
+									'controls[]': '={{$parameter.options.controls}}',
+									'labels[]': '={{$parameter.options.labels}}',
+									per_page: '={{ $parameter.returnAll ? 100 : $parameter.limit }}',
+								},
+							},
+							output: {
+								postReceive: [
+									{
+										type: 'rootProperty',
+										properties: {
+											property: 'data',
+										},
+									},
+								],
+							},
+							operations: {
+								pagination: {
+									type: 'offset',
+									properties: {
+										limitParameter: 'per_page',
+										offsetParameter: 'page',
+										pageSize: 100,
+										rootProperty: 'data',
+										type: 'query',
+									},
+								},
+							},
+						},
+					},
+				],
+				default: 'getMany',
+			},
+
+			// ------------------------
+			// Requirement: Get - Fields
+			// ------------------------
+			{
+				displayName: 'Requirement ID',
+				name: 'requirementId',
+				type: 'string',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: ['requirement'],
+						operation: ['get'],
+					},
+				},
+				default: '',
+				placeholder: 'e.g., 550e8400-e29b-41d4-a716-446655440000',
+				description: 'The ID of the requirement to retrieve',
+			},
+
+			// ------------------------
+			// Requirement: Get Many - Options
+			// ------------------------
+			{
+				displayName: 'Return All',
+				name: 'returnAll',
+				type: 'boolean',
+				displayOptions: {
+					show: {
+						resource: ['requirement'],
+						operation: ['getMany'],
+					},
+				},
+				default: false,
+				description: 'Whether to return all results or only up to a given limit',
+			},
+			{
+				displayName: 'Limit',
+				name: 'limit',
+				type: 'number',
+				displayOptions: {
+					show: {
+						resource: ['requirement'],
+						operation: ['getMany'],
+						returnAll: [false],
+					},
+				},
+				typeOptions: {
+					minValue: 1,
+				},
+				default: 50,
+				description: 'Max number of results to return',
+			}, {
+				displayName: 'Options',
+				name: 'options',
+				type: 'collection',
+				placeholder: 'Add Option',
+				default: {},
+				displayOptions: {
+					show: {
+						resource: ['requirement'],
+						operation: ['getMany'],
+					},
+				},
+				options: [
+					{
+						displayName: 'Framework ID',
+						name: 'frameworkId',
+						type: 'string',
+						default: '',
+						placeholder: '023fb404-56f6-49cd-9379-dbf584d2eef8',
+						description: 'The ID of the framework to get requirements for',
+					},
+					{
+						displayName: 'Applicability',
+						name: 'applicability',
+						type: 'multiOptions',
+						options: [
+							{
+								name: 'Applicable',
+								value: 'true',
+							},
+							{
+								name: 'Not Applicable',
+								value: 'false',
+							},
+						],
+						default: [],
+						description: 'Filter requirements by applicability',
+					},
+					{
+						displayName: 'Chapter',
+						name: 'chapter',
+						type: 'string',
+						default: '',
+						placeholder: 'e.g., Availability, Apply Secure Configurations to All System Components',
+						description: 'Filter by chapter name. For multiple chapters, separate with commas.',
+					},
+					{
+						displayName: 'Controls',
+						name: 'controls',
+						type: 'multiOptions',
+						options: [
+							{
+								name: 'With Failing Controls',
+								value: 'with_failing_controls',
+							},
+							{
+								name: 'Without Controls',
+								value: 'with_no_controls',
+							},
+						],
+						default: [],
+						description: 'Filter requirements by control status',
+					},
+					{
+						displayName: 'Labels',
+						name: 'labels',
+						type: 'string',
+						default: '',
+						placeholder: 'e.g., none, 8cc259df-01fe-43c6-80ef-d0449d78afc1',
+						description: 'Filter by labels. Use "none" for items without labels, or enter label IDs separated by commas.',
+					},
+				],
+			},],
 	};
 }

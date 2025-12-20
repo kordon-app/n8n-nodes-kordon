@@ -97,6 +97,10 @@ export class Kordon implements INodeType {
 						value: 'risk',
 					},
 					{
+						name: 'Vendor',
+						value: 'vendor',
+					},
+					{
 						name: 'User',
 						value: 'user',
 					},
@@ -329,6 +333,247 @@ export class Kordon implements INodeType {
 					},
 				],
 			},
+			// ------------------------
+			// Vendor - Operation
+			// ------------------------
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				displayOptions: {
+					show: {
+						resource: ['vendor'],
+					},
+				},
+				options: [
+					{
+						name: 'Get',
+						value: 'get',
+						description: 'Get a single vendor',
+						action: 'Get a vendor',
+						routing: {
+							request: {
+								method: 'GET',
+								url: '=/vendors/{{$parameter.vendorId}}',
+							},
+							output: {
+								postReceive: [
+									{
+										type: 'rootProperty',
+										properties: {
+											property: 'data',
+										},
+									},
+								],
+							},
+						},
+					},
+					{
+						name: 'Get Many',
+						value: 'getMany',
+						description: 'Get many vendors',
+						action: 'Get many vendors',
+						routing: {
+							send: {
+								preSend: [
+									async function (this, requestOptions) {
+										// Handle array parameters
+										handleArrayParameter(requestOptions, 'state');
+										handleArrayParameter(requestOptions, 'criticality');
+										handleArrayParameter(requestOptions, 'owner');
+										handleArrayParameter(requestOptions, 'manager');
+										handleArrayParameter(requestOptions, 'labels');
+
+										// Log request details for debugging
+										this.logger.info('=== Kordon API Request ===');
+										this.logger.info('URL: ' + requestOptions.url);
+										this.logger.info('Method: ' + requestOptions.method);
+										this.logger.info('Query Params: ' + JSON.stringify(requestOptions.qs));
+										this.logger.info('========================');
+										return requestOptions;
+									},
+								],
+								paginate: '={{ $parameter.returnAll }}',
+							},
+							request: {
+								method: 'GET',
+								url: '/vendors',
+								qs: {
+									'state[]': '={{$parameter.options.state}}',
+									'criticality[]': '={{$parameter.options.criticality}}',
+									'owner[]': '={{$parameter.options.owner}}',
+									'manager[]': '={{$parameter.options.manager}}',
+									'labels[]': '={{$parameter.options.labels}}',
+									per_page: '={{ $parameter.returnAll ? 100 : $parameter.limit }}',
+								},
+							},
+							output: {
+								postReceive: [
+									{
+										type: 'rootProperty',
+										properties: {
+											property: 'data',
+										},
+									},
+								],
+							},
+							operations: {
+								pagination: {
+									type: 'offset',
+									properties: {
+										limitParameter: 'per_page',
+										offsetParameter: 'page',
+										pageSize: 100,
+										rootProperty: 'data',
+										type: 'query',
+									},
+								},
+							},
+						},
+					},
+				],
+				default: 'getMany',
+			},
+
+			// ------------------------
+			// Vendor: Get - Fields
+			// ------------------------
+			{
+				displayName: 'Vendor ID',
+				name: 'vendorId',
+				type: 'string',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: ['vendor'],
+						operation: ['get'],
+					},
+				},
+				default: '',
+				placeholder: 'e.g., 550e8400-e29b-41d4-a716-446655440000',
+				description: 'The ID of the vendor to retrieve',
+			},
+
+			// ------------------------
+			// Vendor: Get Many - Options
+			// ------------------------
+			{
+				displayName: 'Return All',
+				name: 'returnAll',
+				type: 'boolean',
+				displayOptions: {
+					show: {
+						resource: ['vendor'],
+						operation: ['getMany'],
+					},
+				},
+				default: false,
+				description: 'Whether to return all results or only up to a given limit',
+			},
+			{
+				displayName: 'Limit',
+				name: 'limit',
+				type: 'number',
+				displayOptions: {
+					show: {
+						resource: ['vendor'],
+						operation: ['getMany'],
+						returnAll: [false],
+					},
+				},
+				typeOptions: {
+					minValue: 1,
+				},
+				default: 50,
+				description: 'Max number of results to return',
+			},
+			{
+				displayName: 'Options',
+				name: 'options',
+				type: 'collection',
+				placeholder: 'Add Option',
+				default: {},
+				displayOptions: {
+					show: {
+						resource: ['vendor'],
+						operation: ['getMany'],
+					},
+				},
+				options: [
+					{
+						displayName: 'State',
+						name: 'state',
+						type: 'multiOptions',
+						options: [
+							{
+								name: 'Onboarding',
+								value: 'onboarding',
+							},
+							{
+								name: 'Active',
+								value: 'active',
+							},
+							{
+								name: 'Deprecated',
+								value: 'deprecated',
+							},
+							{
+								name: 'Offboarding',
+								value: 'offboarding',
+							},
+						],
+						default: [],
+						description: 'Filter vendors by state',
+					},
+					{
+						displayName: 'Criticality',
+						name: 'criticality',
+						type: 'multiOptions',
+						options: [
+							{
+								name: 'High',
+								value: 'high',
+							},
+							{
+								name: 'Medium',
+								value: 'medium',
+							},
+							{
+								name: 'Low',
+								value: 'low',
+							},
+						],
+						default: [],
+						description: 'Filter vendors by criticality level',
+					},
+					{
+						displayName: 'Owner ID(s)',
+						name: 'owner',
+						type: 'string',
+						default: '',
+						placeholder: 'e.g., fbe8dc76-b1a8-4ce2-866d-15f90c9a20f6',
+						description: 'Filter by owner ID. For multiple owners, separate with commas.',
+					},
+					{
+						displayName: 'Manager ID(s)',
+						name: 'manager',
+						type: 'string',
+						default: '',
+						placeholder: 'e.g., 33837287-85fe-462e-ac08-04db57145dc9',
+						description: 'Filter by manager ID. For multiple managers, separate with commas.',
+					},
+					{
+						displayName: 'Labels',
+						name: 'labels',
+						type: 'string',
+						default: '',
+						placeholder: 'e.g., none, 8cc259df-01fe-43c6-80ef-d0449d78afc1',
+						description: 'Filter by labels. Use "none" for items without labels, or enter label IDs separated by commas.',
+					},
+				],
+			},
+
 			// ------------------------
 			// User - Operation
 			// ------------------------

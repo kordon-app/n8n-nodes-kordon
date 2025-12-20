@@ -16,7 +16,76 @@ This is an n8n community node. It lets you use GitHub Issues in your n8n workflo
 
 Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) in the n8n community nodes documentation.
 
-## Local Development Setup
+## Docker Development Setup (Recommended)
+
+The easiest way to develop and test the Kordon node is using Docker. This provides an isolated n8n environment with your custom node pre-loaded.
+
+### Quick Start
+
+1. **Build the node locally** (required before Docker):
+   ```bash
+   npm install
+   npm run build
+   ```
+
+2. **Start n8n with Docker Compose**:
+   ```bash
+   docker-compose up
+   ```
+
+3. **Access n8n**:
+   - Open http://localhost:5678 in your browser
+   - The Kordon node will be automatically available
+
+### Development Workflow
+
+When making changes to the node:
+
+1. **Make your code changes** in the TypeScript files
+
+2. **Rebuild the node**:
+   ```bash
+   npm run build
+   ```
+
+3. **Restart the Docker container**:
+   ```bash
+   docker-compose restart
+   ```
+
+4. **Refresh your browser** (hard refresh with `Cmd+Shift+R` or `Ctrl+Shift+R`)
+
+### Stopping the Environment
+
+```bash
+# Stop containers
+docker-compose down
+
+# Stop and remove all data (including workflows)
+docker-compose down -v
+```
+
+### Troubleshooting Docker Setup
+
+**Node doesn't appear:**
+- Ensure you ran `npm run build` before `docker-compose up`
+- Check the `dist` folder exists with compiled JavaScript files
+- Restart the container: `docker-compose restart`
+- Check container logs: `docker-compose logs n8n`
+
+**Changes not showing:**
+- Always rebuild with `npm run build` after code changes
+- Restart the container: `docker-compose restart`
+- Clear browser cache or use incognito mode
+
+**Port already in use:**
+- Another n8n instance might be running
+- Stop it: `pkill -9 -f n8n`
+- Or change the port in `docker-compose.yml`: `"5679:5678"`
+
+## Local Development Setup (Alternative)
+
+If you prefer to develop without Docker, you can link the node directly to your local n8n installation.
 
 ### Prerequisites
 

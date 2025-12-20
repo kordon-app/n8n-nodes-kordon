@@ -109,6 +109,10 @@ export class Kordon implements INodeType {
 						value: 'risk',
 					},
 					{
+						name: 'Task',
+						value: 'task',
+					},
+					{
 						name: 'Vendor',
 						value: 'vendor',
 					},
@@ -183,7 +187,6 @@ export class Kordon implements INodeType {
 									return requestOptions;
 								},
 							],
-							paginate: '={{ $parameter.returnAll }}',
 						},
 						request: {
 							method: 'GET',
@@ -440,7 +443,6 @@ export class Kordon implements INodeType {
 									return requestOptions;
 								},
 							],
-							paginate: '={{ $parameter.returnAll }}',
 						},
 						request: {
 							method: 'GET',
@@ -870,7 +872,6 @@ export class Kordon implements INodeType {
 										return requestOptions;
 									},
 								],
-								paginate: '={{ $parameter.returnAll }}',
 							},
 							request: {
 								method: 'GET',
@@ -1181,6 +1182,222 @@ export class Kordon implements INodeType {
 			},
 
 			// ------------------------
+			// Task - Operation
+			// ------------------------
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				displayOptions: {
+					show: {
+						resource: ['task'],
+					},
+				},
+				options: [
+					{
+						name: 'Get',
+						value: 'get',
+						description: 'Get a single task',
+						action: 'Get a task',
+						routing: {
+							request: {
+								method: 'GET',
+								url: '=/tasks/{{$parameter.taskId}}',
+							},
+							output: {
+								postReceive: [
+									{
+										type: 'rootProperty',
+										properties: {
+											property: 'data',
+										},
+									},
+								],
+							},
+						},
+					},
+					{
+						name: 'Get Many',
+						value: 'getMany',
+						description: 'Get many tasks',
+						action: 'Get many tasks',
+						routing: {
+							send: {
+								preSend: [
+									async function (this, requestOptions) {
+										// Handle array parameters
+										handleArrayParameter(requestOptions, 'kind');
+										handleArrayParameter(requestOptions, 'state');
+										handleArrayParameter(requestOptions, 'assignee');
+
+										// Log request details for debugging
+										this.logger.info('=== Kordon API Request ===');
+										this.logger.info('URL: ' + requestOptions.url);
+										this.logger.info('Method: ' + requestOptions.method);
+										this.logger.info('Query Params: ' + JSON.stringify(requestOptions.qs));
+										this.logger.info('========================');
+										return requestOptions;
+									},
+								],
+							},
+							request: {
+								method: 'GET',
+								url: '/tasks',
+								qs: {
+									'kind[]': '={{$parameter.options.kind}}',
+									'state[]': '={{$parameter.options.state}}',
+									'assignee[]': '={{$parameter.options.assignee}}',
+									per_page: '={{ $parameter.returnAll ? 100 : $parameter.limit }}',
+								},
+							},
+							output: {
+								postReceive: [
+									{
+										type: 'rootProperty',
+										properties: {
+											property: 'data',
+										},
+									},
+								],
+							},
+							operations: {
+								pagination: {
+									type: 'offset',
+									properties: {
+										limitParameter: 'per_page',
+										offsetParameter: 'page',
+										pageSize: 100,
+										rootProperty: 'data',
+										type: 'query',
+									},
+								},
+							},
+						},
+					},
+				],
+				default: 'getMany',
+			},
+
+			// ------------------------
+			// Task: Get - Fields
+			// ------------------------
+			{
+				displayName: 'Task ID',
+				name: 'taskId',
+				type: 'string',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: ['task'],
+						operation: ['get'],
+					},
+				},
+				default: '',
+				placeholder: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+				description: 'The ID of the task to retrieve',
+			},
+
+			// ------------------------
+			// Task: Get Many - Options
+			// ------------------------
+			{
+				displayName: 'Return All',
+				name: 'returnAll',
+				type: 'boolean',
+				displayOptions: {
+					show: {
+						resource: ['task'],
+						operation: ['getMany'],
+					},
+				},
+				default: false,
+				description: 'Whether to return all results or only up to a given limit',
+			},
+			{
+				displayName: 'Limit',
+				name: 'limit',
+				type: 'number',
+				displayOptions: {
+					show: {
+						resource: ['task'],
+						operation: ['getMany'],
+						returnAll: [false],
+					},
+				},
+				typeOptions: {
+					minValue: 1,
+				},
+				default: 50,
+				description: 'Max number of results to return',
+			},
+			{
+				displayName: 'Options',
+				name: 'options',
+				type: 'collection',
+				placeholder: 'Add Filter',
+				default: {},
+				displayOptions: {
+					show: {
+						resource: ['task'],
+						operation: ['getMany'],
+					},
+				},
+				options: [
+					{
+						displayName: 'Kind',
+						name: 'kind',
+						type: 'multiOptions',
+						default: [],
+						description: 'Filter by task kind',
+						options: [
+							{
+								name: 'Audit',
+								value: 'audit',
+							},
+							{
+								name: 'Maintenance',
+								value: 'maintenance',
+							},
+							{
+								name: 'Review',
+								value: 'review',
+							},
+						],
+					},
+					{
+						displayName: 'State',
+						name: 'state',
+						type: 'multiOptions',
+						default: [],
+						description: 'Filter by task state',
+						options: [
+							{
+								name: 'New',
+								value: 'new',
+							},
+							{
+								name: 'Done',
+								value: 'done',
+							},
+							{
+								name: 'Failed',
+								value: 'failed',
+							},
+						],
+					},
+					{
+						displayName: 'Assignee',
+						name: 'assignee',
+						type: 'string',
+						default: '',
+						description: 'Filter by assignee user IDs (comma-separated)',
+						placeholder: 'fbe8dc76-b1a8-4ce2-866d-15f90c9a20f6,58e7bf6e-618e-4c87-81fb-31b5ecee2d41',
+					},
+				],
+			},
+
+			// ------------------------
 		// ------------------------
 		// Finding - Operation
 		// ------------------------
@@ -1243,7 +1460,6 @@ export class Kordon implements INodeType {
 									return requestOptions;
 								},
 							],
-							paginate: '={{ $parameter.returnAll }}',
 						},
 						request: {
 							method: 'GET',

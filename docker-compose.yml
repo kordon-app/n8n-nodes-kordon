@@ -1,0 +1,17 @@
+version: '3.8'
+services:
+  n8n:
+    build: .
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_CUSTOM_EXTENSIONS=/data/custom-nodes
+    volumes:
+      # Mount the built node files (dist folder will be created when you run npm run build locally)
+      - ./dist:/data/custom-nodes/n8n-nodes-kordon/dist
+      - ./package.json:/data/custom-nodes/n8n-nodes-kordon/package.json
+      # n8n data volume for persistence
+      - n8n_data:/home/node/.n8n
+
+volumes:
+  n8n_data:

@@ -5,6 +5,7 @@ This is an n8n community node. It lets you use GitHub Issues in your n8n workflo
 [n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/sustainable-use-license/) workflow automation platform.
 
 [Installation](#installation)
+[Local Development Setup](#local-development-setup)
 [Operations](#operations)
 [Credentials](#credentials)
 [Compatibility](#compatibility)
@@ -14,6 +15,83 @@ This is an n8n community node. It lets you use GitHub Issues in your n8n workflo
 ## Installation
 
 Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) in the n8n community nodes documentation.
+
+## Local Development Setup
+
+### Prerequisites
+
+1. Install n8n globally:
+   ```bash
+   npm install -g n8n
+   ```
+
+### Linking Your Custom Node to n8n
+
+To test your custom node locally with your n8n instance:
+
+1. **Build the node** (in the node directory):
+   ```bash
+   cd /path/to/n8n-nodes-kordon
+   npm run build
+   ```
+
+2. **Set up the .n8n directory** (if not already done):
+   ```bash
+   cd ~/.n8n
+   # Create package.json if it doesn't exist
+   echo '{"name":"n8n-custom","version":"1.0.0"}' > package.json
+   ```
+
+3. **Install the custom node as a local dependency**:
+   ```bash
+   cd ~/.n8n
+   npm install "/path/to/n8n-nodes-kordon"
+   ```
+   
+   This creates a symlink in `~/.n8n/node_modules/n8n-nodes-kordon` pointing to your local development directory.
+
+4. **Clear cache and restart n8n**:
+   ```bash
+   pkill -9 -f n8n
+   rm -rf ~/.n8n/.cache
+   n8n start
+   ```
+
+5. **Verify the node appears**:
+   - Open n8n at http://localhost:5678
+   - Search for "Kordon" when adding a new node
+   - The node should now appear in the node list
+
+### Making Changes
+
+After modifying the node code:
+
+1. Rebuild the node:
+   ```bash
+   cd /path/to/n8n-nodes-kordon
+   npm run build
+   ```
+
+2. Restart n8n:
+   ```bash
+   pkill -9 -f n8n
+   rm -rf ~/.n8n/.cache
+   n8n start
+   ```
+
+### Troubleshooting
+
+**Node doesn't appear after linking:**
+- **First, try clearing your browser cache** or open n8n in an incognito/private window - this is often the issue!
+- Hard refresh the browser: `Cmd+Shift+R` (Mac) or `Ctrl+Shift+R` (Windows/Linux)
+- Verify the symlink exists: `ls -la ~/.n8n/node_modules/ | grep kordon`
+- Clear n8n caches: `rm -rf ~/.n8n/.cache ~/.n8n/cache`
+- Rebuild the node in .n8n: `cd ~/.n8n && npm rebuild n8n-nodes-kordon`
+- Restart n8n completely
+
+**npm link freezes:**
+- Don't use `npm link` directly - use `npm install` with the local path instead
+- This creates a proper dependency entry in package.json that n8n recognizes
 
 ## Operations
 

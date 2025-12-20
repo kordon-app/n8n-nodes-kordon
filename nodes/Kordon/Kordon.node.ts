@@ -81,8 +81,16 @@ export class Kordon implements INodeType {
 				noDataExpression: true,
 				options: [
 					{
+						name: 'Asset',
+						value: 'asset',
+					},
+					{
 						name: 'Control',
 						value: 'control',
+					},
+					{
+						name: 'Finding',
+						value: 'finding',
 					},
 					{
 						name: 'Framework',
@@ -109,6 +117,266 @@ export class Kordon implements INodeType {
 			},
 
 			// ------------------------
+		// ------------------------
+		// Asset - Operation
+		// ------------------------
+		{
+			displayName: 'Operation',
+			name: 'operation',
+			type: 'options',
+			noDataExpression: true,
+			displayOptions: {
+				show: {
+					resource: ['asset'],
+				},
+			},
+			options: [
+				{
+					name: 'Get',
+					value: 'get',
+					description: 'Get a single asset',
+					action: 'Get an asset',
+					routing: {
+						request: {
+							method: 'GET',
+							url: '=/assets/{{$parameter.assetId}}',
+						},
+						output: {
+							postReceive: [
+								{
+									type: 'rootProperty',
+									properties: {
+										property: 'data',
+									},
+								},
+							],
+						},
+					},
+				},
+				{
+					name: 'Get Many',
+					value: 'getMany',
+					description: 'Get many assets',
+					action: 'Get many assets',
+					routing: {
+						send: {
+							preSend: [
+								async function (this, requestOptions) {
+									// Handle array parameters
+									handleArrayParameter(requestOptions, 'state');
+									handleArrayParameter(requestOptions, 'asset_value');
+									handleArrayParameter(requestOptions, 'health');
+									handleArrayParameter(requestOptions, 'owner');
+									handleArrayParameter(requestOptions, 'manager');
+									handleArrayParameter(requestOptions, 'labels');
+
+									// Log request details for debugging
+									this.logger.info('=== Kordon API Request ===');
+									this.logger.info('URL: ' + requestOptions.url);
+									this.logger.info('Method: ' + requestOptions.method);
+									this.logger.info('Query Params: ' + JSON.stringify(requestOptions.qs));
+									this.logger.info('========================');
+									return requestOptions;
+								},
+							],
+							paginate: '={{ $parameter.returnAll }}',
+						},
+						request: {
+							method: 'GET',
+							url: '/assets',
+							qs: {
+								'state[]': '={{$parameter.options.state}}',
+								'asset_value[]': '={{$parameter.options.asset_value}}',
+								'health[]': '={{$parameter.options.health}}',
+								'owner[]': '={{$parameter.options.owner}}',
+								'manager[]': '={{$parameter.options.manager}}',
+								'labels[]': '={{$parameter.options.labels}}',
+								per_page: '={{ $parameter.returnAll ? 100 : $parameter.limit }}',
+							},
+						},
+						output: {
+							postReceive: [
+								{
+									type: 'rootProperty',
+									properties: {
+										property: 'data',
+									},
+								},
+							],
+						},
+						operations: {
+							pagination: {
+								type: 'offset',
+								properties: {
+									limitParameter: 'per_page',
+									offsetParameter: 'page',
+									pageSize: 100,
+									rootProperty: 'data',
+									type: 'query',
+								},
+							},
+						},
+					},
+				},
+			],
+			default: 'getMany',
+		},
+
+		// ------------------------
+		// Asset: Get - Fields
+		// ------------------------
+		{
+			displayName: 'Asset ID',
+			name: 'assetId',
+			type: 'string',
+			required: true,
+			displayOptions: {
+				show: {
+					resource: ['asset'],
+					operation: ['get'],
+				},
+			},
+			default: '',
+			placeholder: 'e.g., 550e8400-e29b-41d4-a716-446655440000',
+			description: 'The ID of the asset to retrieve',
+		},
+
+		// ------------------------
+		// Asset: Get Many - Options
+		// ------------------------
+		{
+			displayName: 'Return All',
+			name: 'returnAll',
+			type: 'boolean',
+			displayOptions: {
+				show: {
+					resource: ['asset'],
+					operation: ['getMany'],
+				},
+			},
+			default: false,
+			description: 'Whether to return all results or only up to a given limit',
+		},
+		{
+			displayName: 'Limit',
+			name: 'limit',
+			type: 'number',
+			displayOptions: {
+				show: {
+					resource: ['asset'],
+					operation: ['getMany'],
+					returnAll: [false],
+				},
+			},
+			typeOptions: {
+				minValue: 1,
+			},
+			default: 50,
+			description: 'Max number of results to return',
+		},
+		{
+			displayName: 'Options',
+			name: 'options',
+			type: 'collection',
+			placeholder: 'Add Option',
+			default: {},
+			displayOptions: {
+				show: {
+					resource: ['asset'],
+					operation: ['getMany'],
+				},
+			},
+			options: [
+				{
+					displayName: 'State',
+					name: 'state',
+					type: 'multiOptions',
+					options: [
+						{
+							name: 'Live',
+							value: 'live',
+						},
+						{
+							name: 'Planned',
+							value: 'planned',
+						},
+						{
+							name: 'Deprecated',
+							value: 'deprecated',
+						},
+					],
+					default: [],
+					description: 'Filter assets by state',
+				},
+				{
+					displayName: 'Asset Value',
+					name: 'asset_value',
+					type: 'multiOptions',
+					options: [
+						{
+							name: 'High',
+							value: 'high',
+						},
+						{
+							name: 'Medium',
+							value: 'medium',
+						},
+						{
+							name: 'Low',
+							value: 'low',
+						},
+					],
+					default: [],
+					description: 'Filter assets by value',
+				},
+				{
+					displayName: 'Health',
+					name: 'health',
+					type: 'multiOptions',
+					options: [
+						{
+							name: 'With Failing Controls',
+							value: 'with_failing_controls',
+						},
+						{
+							name: 'With No Controls',
+							value: 'with_no_controls',
+						},
+						{
+							name: 'With Unmitigated Risks',
+							value: 'with_unmitigated_risks',
+						},
+					],
+					default: [],
+					description: 'Filter assets by health status',
+				},
+				{
+					displayName: 'Owner ID(s)',
+					name: 'owner',
+					type: 'string',
+					default: '',
+					placeholder: 'e.g., fbe8dc76-b1a8-4ce2-866d-15f90c9a20f6',
+					description: 'Filter by owner ID. For multiple owners, separate with commas.',
+				},
+				{
+					displayName: 'Manager ID(s)',
+					name: 'manager',
+					type: 'string',
+					default: '',
+					placeholder: 'e.g., 33837287-85fe-462e-ac08-04db57145dc9',
+					description: 'Filter by manager ID. For multiple managers, separate with commas.',
+				},
+				{
+					displayName: 'Labels',
+					name: 'labels',
+					type: 'string',
+					default: '',
+					placeholder: 'e.g., none, 8cc259df-01fe-43c6-80ef-d0449d78afc1',
+					description: 'Filter by labels. Use "none" for items without labels, or enter label IDs separated by commas.',
+				},
+			],
+		},
+
 			// Control - Operation
 			// ------------------------
 			{
@@ -705,6 +973,287 @@ export class Kordon implements INodeType {
 			},
 
 			// ------------------------
+		// ------------------------
+		// Finding - Operation
+		// ------------------------
+		{
+			displayName: 'Operation',
+			name: 'operation',
+			type: 'options',
+			noDataExpression: true,
+			displayOptions: {
+				show: {
+					resource: ['finding'],
+				},
+			},
+			options: [
+				{
+					name: 'Get',
+					value: 'get',
+					description: 'Get a single finding',
+					action: 'Get a finding',
+					routing: {
+						request: {
+							method: 'GET',
+							url: '=/findings/{{$parameter.findingId}}',
+						},
+						output: {
+							postReceive: [
+								{
+									type: 'rootProperty',
+									properties: {
+										property: 'data',
+									},
+								},
+							],
+						},
+					},
+				},
+				{
+					name: 'Get Many',
+					value: 'getMany',
+					description: 'Get many findings',
+					action: 'Get many findings',
+					routing: {
+						send: {
+							preSend: [
+								async function (this, requestOptions) {
+									// Handle array parameters
+									handleArrayParameter(requestOptions, 'kind');
+									handleArrayParameter(requestOptions, 'state');
+									handleArrayParameter(requestOptions, 'priority');
+									handleArrayParameter(requestOptions, 'source', { encodeValues: true });
+									handleArrayParameter(requestOptions, 'owner');
+									handleArrayParameter(requestOptions, 'manager');
+
+									// Log request details for debugging
+									this.logger.info('=== Kordon API Request ===');
+									this.logger.info('URL: ' + requestOptions.url);
+									this.logger.info('Method: ' + requestOptions.method);
+									this.logger.info('Query Params: ' + JSON.stringify(requestOptions.qs));
+									this.logger.info('========================');
+									return requestOptions;
+								},
+							],
+							paginate: '={{ $parameter.returnAll }}',
+						},
+						request: {
+							method: 'GET',
+							url: '/findings',
+							qs: {
+								'kind[]': '={{$parameter.options.kind}}',
+								'state[]': '={{$parameter.options.state}}',
+								'priority[]': '={{$parameter.options.priority}}',
+								'source[]': '={{$parameter.options.source}}',
+								'owner[]': '={{$parameter.options.owner}}',
+								'manager[]': '={{$parameter.options.manager}}',
+								per_page: '={{ $parameter.returnAll ? 100 : $parameter.limit }}',
+							},
+						},
+						output: {
+							postReceive: [
+								{
+									type: 'rootProperty',
+									properties: {
+										property: 'data',
+									},
+								},
+							],
+						},
+						operations: {
+							pagination: {
+								type: 'offset',
+								properties: {
+									limitParameter: 'per_page',
+									offsetParameter: 'page',
+									pageSize: 100,
+									rootProperty: 'data',
+									type: 'query',
+								},
+							},
+						},
+					},
+				},
+			],
+			default: 'getMany',
+		},
+
+		// ------------------------
+		// Finding: Get - Fields
+		// ------------------------
+		{
+			displayName: 'Finding ID',
+			name: 'findingId',
+			type: 'string',
+			required: true,
+			displayOptions: {
+				show: {
+					resource: ['finding'],
+					operation: ['get'],
+				},
+			},
+			default: '',
+			placeholder: 'e.g., 550e8400-e29b-41d4-a716-446655440000',
+			description: 'The ID of the finding to retrieve',
+		},
+
+		// ------------------------
+		// Finding: Get Many - Options
+		// ------------------------
+		{
+			displayName: 'Return All',
+			name: 'returnAll',
+			type: 'boolean',
+			displayOptions: {
+				show: {
+					resource: ['finding'],
+					operation: ['getMany'],
+				},
+			},
+			default: false,
+			description: 'Whether to return all results or only up to a given limit',
+		},
+		{
+			displayName: 'Limit',
+			name: 'limit',
+			type: 'number',
+			displayOptions: {
+				show: {
+					resource: ['finding'],
+					operation: ['getMany'],
+					returnAll: [false],
+				},
+			},
+			typeOptions: {
+				minValue: 1,
+			},
+			default: 50,
+			description: 'Max number of results to return',
+		},
+		{
+			displayName: 'Options',
+			name: 'options',
+			type: 'collection',
+			placeholder: 'Add Option',
+			default: {},
+			displayOptions: {
+				show: {
+					resource: ['finding'],
+					operation: ['getMany'],
+				},
+			},
+			options: [
+				{
+					displayName: 'Kind',
+					name: 'kind',
+					type: 'multiOptions',
+					options: [
+						{
+							name: 'OFI',
+							value: 'ofi',
+						},
+						{
+							name: 'Incident',
+							value: 'incident',
+						},
+						{
+							name: 'NCR',
+							value: 'ncr',
+						},
+					],
+					default: [],
+					description: 'Filter findings by kind',
+				},
+				{
+					displayName: 'State',
+					name: 'state',
+					type: 'multiOptions',
+					options: [
+						{
+							name: 'Open',
+							value: 'open',
+						},
+						{
+							name: 'In Progress',
+							value: 'in_progress',
+						},
+						{
+							name: 'Resolved',
+							value: 'resolved',
+						},
+						{
+							name: 'Closed',
+							value: 'closed',
+						},
+					],
+					default: [],
+					description: 'Filter findings by state',
+				},
+				{
+					displayName: 'Priority',
+					name: 'priority',
+					type: 'multiOptions',
+					options: [
+						{
+							name: 'High',
+							value: 'high',
+						},
+						{
+							name: 'Medium',
+							value: 'medium',
+						},
+						{
+							name: 'Low',
+							value: 'low',
+						},
+					],
+					default: [],
+					description: 'Filter findings by priority',
+				},
+				{
+					displayName: 'Source',
+					name: 'source',
+					type: 'multiOptions',
+					options: [
+						{
+							name: 'Internal Audit',
+							value: 'Internal audit',
+						},
+						{
+							name: 'External Audit',
+							value: 'External audit',
+						},
+						{
+							name: 'Incident',
+							value: 'incident',
+						},
+						{
+							name: 'Observation',
+							value: 'observation',
+						},
+					],
+					default: [],
+					description: 'Filter findings by source',
+				},
+				{
+					displayName: 'Owner ID(s)',
+					name: 'owner',
+					type: 'string',
+					default: '',
+					placeholder: 'e.g., 55b9e62b-d49b-40e8-97ca-2bfbb1dc9919',
+					description: 'Filter by owner ID. For multiple owners, separate with commas.',
+				},
+				{
+					displayName: 'Manager ID(s)',
+					name: 'manager',
+					type: 'string',
+					default: '',
+					placeholder: 'e.g., 3ddbf84e-933c-448d-bbd7-4125eeac2491',
+					description: 'Filter by manager ID. For multiple managers, separate with commas.',
+				},
+			],
+		},
+
 			// Framework - Operation
 			// ------------------------
 			{

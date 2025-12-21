@@ -1,5 +1,29 @@
 import { NodeConnectionTypes, type INodeType, type INodeTypeDescription } from 'n8n-workflow';
 
+// Reusable pagination routing config for all Get Many operations
+const paginationRouting = {
+	send: {
+		paginate: '={{ $value }}',
+		type: 'query' as const,
+		property: 'per_page',
+		value: '={{ 100 }}',
+	},
+	operations: {
+		pagination: {
+			type: 'generic' as const,
+			properties: {
+				continue: '={{ $response.body.data && $response.body.data.length > 0 && (Number($response.body.meta.page) * Number($response.body.meta.per_page)) < $response.body.meta.total_count }}',
+				request: {
+					qs: {
+						page: '={{ Number($response.body.meta.page || 1) + 1 }}',
+						per_page: '={{ 100 }}',
+					},
+				},
+			},
+		},
+	},
+};
+
 // Helper function to handle array parameters in query strings
 function handleArrayParameter(
 	requestOptions: any,
@@ -183,6 +207,7 @@ export class Kordon implements INodeType {
 									this.logger.info('URL: ' + requestOptions.url);
 									this.logger.info('Method: ' + requestOptions.method);
 									this.logger.info('Query Params: ' + JSON.stringify(requestOptions.qs));
+									this.logger.info('Headers: ' + JSON.stringify(requestOptions.headers));
 									this.logger.info('========================');
 									return requestOptions;
 								},
@@ -191,18 +216,37 @@ export class Kordon implements INodeType {
 						request: {
 							method: 'GET',
 							url: '/assets',
+							returnFullResponse: true,
 							qs: {
 								'state[]': '={{$parameter.options.state}}',
 								'asset_value[]': '={{$parameter.options.asset_value}}',
 								'health[]': '={{$parameter.options.health}}',
 								'owner[]': '={{$parameter.options.owner}}',
 								'manager[]': '={{$parameter.options.manager}}',
-								'labels[]': '={{$parameter.options.labels}}',
-								per_page: '={{ $parameter.returnAll ? 100 : $parameter.limit }}',
+								'labels[]': '={{$parameter.options.labels}}'
 							},
 						},
 						output: {
 							postReceive: [
+								async function (this, items, response) {
+									// Log response details for debugging
+									this.logger.info('=== Kordon API Response ===');
+									this.logger.info('Status Code: ' + response.statusCode);
+									this.logger.info('Response Body Type: ' + typeof response.body);
+									
+									const body = response.body as any;
+									if (body) {
+										this.logger.info('Has data property: ' + (!!body.data));
+										this.logger.info('Data length: ' + (body.data ? body.data.length : 'N/A'));
+										this.logger.info('Has meta property: ' + (!!body.meta));
+										if (body.meta) {
+											this.logger.info('Meta: ' + JSON.stringify(body.meta));
+										}
+									}
+									this.logger.info('Items received: ' + items.length);
+									this.logger.info('========================');
+									return items;
+								},
 								{
 									type: 'rootProperty',
 									properties: {
@@ -210,18 +254,6 @@ export class Kordon implements INodeType {
 									},
 								},
 							],
-						},
-						operations: {
-							pagination: {
-								type: 'offset',
-								properties: {
-									limitParameter: 'per_page',
-									offsetParameter: 'page',
-									pageSize: 100,
-									rootProperty: 'data',
-									type: 'query',
-								},
-							},
 						},
 					},
 				},
@@ -263,6 +295,7 @@ export class Kordon implements INodeType {
 			},
 			default: false,
 			description: 'Whether to return all results or only up to a given limit',
+			routing: paginationRouting,
 		},
 		{
 			displayName: 'Limit',
@@ -447,11 +480,11 @@ export class Kordon implements INodeType {
 						request: {
 							method: 'GET',
 							url: '/business-processes',
+							returnFullResponse: true,
 							qs: {
 								'criticality[]': '={{$parameter.options.criticality}}',
 								'owner[]': '={{$parameter.options.owner}}',
 								'labels[]': '={{$parameter.options.labels}}',
-								per_page: '={{ $parameter.returnAll ? 100 : $parameter.limit }}',
 							},
 						},
 						output: {
@@ -463,18 +496,6 @@ export class Kordon implements INodeType {
 									},
 								},
 							],
-						},
-						operations: {
-							pagination: {
-								type: 'offset',
-								properties: {
-									limitParameter: 'per_page',
-									offsetParameter: 'page',
-									pageSize: 100,
-									rootProperty: 'data',
-									type: 'query',
-								},
-							},
 						},
 					},
 				},
@@ -516,6 +537,7 @@ export class Kordon implements INodeType {
 			},
 			default: false,
 			description: 'Whether to return all results or only up to a given limit',
+			routing: paginationRouting,
 		},
 		{
 			displayName: 'Limit',
@@ -650,12 +672,12 @@ export class Kordon implements INodeType {
 							request: {
 								method: 'GET',
 								url: '/controls',
+								returnFullResponse: true,
 								qs: {
 									'kind[]': '={{$parameter.options.kind}}',
 									'state[]': '={{$parameter.options.state}}',
 									'owner[]': '={{$parameter.options.owner}}',
 									'labels[]': '={{$parameter.options.labels}}',
-									per_page: '={{ $parameter.returnAll ? 100 : $parameter.limit }}',
 								},
 							},
 							output: {
@@ -667,18 +689,6 @@ export class Kordon implements INodeType {
 										},
 									},
 								],
-							},
-							operations: {
-								pagination: {
-									type: 'offset',
-									properties: {
-										limitParameter: 'per_page',
-										offsetParameter: 'page',
-										pageSize: 100,
-										rootProperty: 'data',
-										type: 'query',
-									},
-								},
 							},
 						},
 					},
@@ -720,6 +730,7 @@ export class Kordon implements INodeType {
 				},
 				default: false,
 				description: 'Whether to return all results or only up to a given limit',
+				routing: paginationRouting,
 			},
 			{
 				displayName: 'Limit',
@@ -876,17 +887,32 @@ export class Kordon implements INodeType {
 							request: {
 								method: 'GET',
 								url: '/vendors',
+								returnFullResponse: true,
 								qs: {
 									'state[]': '={{$parameter.options.state}}',
 									'criticality[]': '={{$parameter.options.criticality}}',
 									'owner[]': '={{$parameter.options.owner}}',
 									'manager[]': '={{$parameter.options.manager}}',
 									'labels[]': '={{$parameter.options.labels}}',
-									per_page: '={{ $parameter.returnAll ? 100 : $parameter.limit }}',
 								},
 							},
 							output: {
 								postReceive: [
+									async function (this, items, response) {
+										// Log response details for debugging
+										this.logger.info('=== Kordon Vendor API Response ===');
+										this.logger.info('Status Code: ' + response.statusCode);
+										
+										const body = response.body as any;
+										if (body) {
+											this.logger.info('Data length: ' + (body.data ? body.data.length : 'N/A'));
+											if (body.meta) {
+												this.logger.info('Meta: ' + JSON.stringify(body.meta));
+											}
+										}
+										this.logger.info('========================');
+										return items;
+									},
 									{
 										type: 'rootProperty',
 										properties: {
@@ -894,18 +920,6 @@ export class Kordon implements INodeType {
 										},
 									},
 								],
-							},
-							operations: {
-								pagination: {
-									type: 'offset',
-									properties: {
-										limitParameter: 'per_page',
-										offsetParameter: 'page',
-										pageSize: 100,
-										rootProperty: 'data',
-										type: 'query',
-									},
-								},
 							},
 						},
 					},
@@ -947,6 +961,7 @@ export class Kordon implements INodeType {
 				},
 				default: false,
 				description: 'Whether to return all results or only up to a given limit',
+				routing: paginationRouting,
 			},
 			{
 				displayName: 'Limit',
@@ -1096,9 +1111,7 @@ export class Kordon implements INodeType {
 							request: {
 								method: 'GET',
 								url: '/users',
-								qs: {
-									per_page: '={{ $parameter.returnAll ? 100 : $parameter.limit }}',
-								},
+								returnFullResponse: true,
 							},
 							output: {
 								postReceive: [
@@ -1109,18 +1122,6 @@ export class Kordon implements INodeType {
 										},
 									},
 								],
-							},
-							operations: {
-								pagination: {
-									type: 'offset',
-									properties: {
-										limitParameter: 'per_page',
-										offsetParameter: 'page',
-										pageSize: 100,
-										rootProperty: 'data',
-										type: 'query',
-									},
-								},
 							},
 						},
 					},
@@ -1162,6 +1163,7 @@ export class Kordon implements INodeType {
 				},
 				default: false,
 				description: 'Whether to return all results or only up to a given limit',
+				routing: paginationRouting,
 			},
 			{
 				displayName: 'Limit',
@@ -1244,11 +1246,11 @@ export class Kordon implements INodeType {
 							request: {
 								method: 'GET',
 								url: '/tasks',
+								returnFullResponse: true,
 								qs: {
 									'kind[]': '={{$parameter.options.kind}}',
 									'state[]': '={{$parameter.options.state}}',
 									'assignee[]': '={{$parameter.options.assignee}}',
-									per_page: '={{ $parameter.returnAll ? 100 : $parameter.limit }}',
 								},
 							},
 							output: {
@@ -1260,18 +1262,6 @@ export class Kordon implements INodeType {
 										},
 									},
 								],
-							},
-							operations: {
-								pagination: {
-									type: 'offset',
-									properties: {
-										limitParameter: 'per_page',
-										offsetParameter: 'page',
-										pageSize: 100,
-										rootProperty: 'data',
-										type: 'query',
-									},
-								},
 							},
 						},
 					},
@@ -1313,6 +1303,7 @@ export class Kordon implements INodeType {
 				},
 				default: false,
 				description: 'Whether to return all results or only up to a given limit',
+				routing: paginationRouting,
 			},
 			{
 				displayName: 'Limit',
@@ -1464,6 +1455,7 @@ export class Kordon implements INodeType {
 						request: {
 							method: 'GET',
 							url: '/findings',
+							returnFullResponse: true,
 							qs: {
 								'kind[]': '={{$parameter.options.kind}}',
 								'state[]': '={{$parameter.options.state}}',
@@ -1471,7 +1463,6 @@ export class Kordon implements INodeType {
 								'source[]': '={{$parameter.options.source}}',
 								'owner[]': '={{$parameter.options.owner}}',
 								'manager[]': '={{$parameter.options.manager}}',
-								per_page: '={{ $parameter.returnAll ? 100 : $parameter.limit }}',
 							},
 						},
 						output: {
@@ -1483,18 +1474,6 @@ export class Kordon implements INodeType {
 									},
 								},
 							],
-						},
-						operations: {
-							pagination: {
-								type: 'offset',
-								properties: {
-									limitParameter: 'per_page',
-									offsetParameter: 'page',
-									pageSize: 100,
-									rootProperty: 'data',
-									type: 'query',
-								},
-							},
 						},
 					},
 				},
@@ -1536,6 +1515,7 @@ export class Kordon implements INodeType {
 			},
 			default: false,
 			description: 'Whether to return all results or only up to a given limit',
+			routing: paginationRouting,
 		},
 		{
 			displayName: 'Limit',
@@ -1722,9 +1702,7 @@ export class Kordon implements INodeType {
 							request: {
 								method: 'GET',
 								url: '/regulations',
-								qs: {
-									per_page: '={{ $parameter.returnAll ? 100 : $parameter.limit }}',
-								},
+								returnFullResponse: true,
 							},
 							output: {
 								postReceive: [
@@ -1735,18 +1713,6 @@ export class Kordon implements INodeType {
 										},
 									},
 								],
-							},
-							operations: {
-								pagination: {
-									type: 'offset',
-									properties: {
-										limitParameter: 'per_page',
-										offsetParameter: 'page',
-										pageSize: 100,
-										rootProperty: 'data',
-										type: 'query',
-									},
-								},
 							},
 						},
 					},
@@ -1788,6 +1754,7 @@ export class Kordon implements INodeType {
 				},
 				default: false,
 				description: 'Whether to return all results or only up to a given limit',
+				routing: paginationRouting,
 			},
 			{
 				displayName: 'Limit',
@@ -1871,12 +1838,14 @@ export class Kordon implements INodeType {
 							request: {
 								method: 'GET',
 								url: '/risks',
+								returnFullResponse: true,
 								qs: {
 									'state[]': '={{$parameter.options.state}}',
 									'owner[]': '={{$parameter.options.owner}}',
 									'manager[]': '={{$parameter.options.manager}}',
-									'labels[]': '={{$parameter.options.labels}}', 'impact[]': '={{$parameter.options.impact}}',
-									'probability[]': '={{$parameter.options.probability}}', per_page: '={{ $parameter.returnAll ? 100 : $parameter.limit }}',
+									'labels[]': '={{$parameter.options.labels}}',
+									'impact[]': '={{$parameter.options.impact}}',
+									'probability[]': '={{$parameter.options.probability}}',
 								},
 							},
 							output: {
@@ -1888,18 +1857,6 @@ export class Kordon implements INodeType {
 										},
 									},
 								],
-							},
-							operations: {
-								pagination: {
-									type: 'offset',
-									properties: {
-										limitParameter: 'per_page',
-										offsetParameter: 'page',
-										pageSize: 100,
-										rootProperty: 'data',
-										type: 'query',
-									},
-								},
 							},
 						},
 					},
@@ -1941,6 +1898,7 @@ export class Kordon implements INodeType {
 				},
 				default: false,
 				description: 'Whether to return all results or only up to a given limit',
+				routing: paginationRouting,
 			},
 			{
 				displayName: 'Limit',
@@ -2097,13 +2055,13 @@ export class Kordon implements INodeType {
 							request: {
 								method: 'GET',
 								url: '/requirements',
+								returnFullResponse: true,
 								qs: {
 									'frameworks[]': '={{$parameter.options.frameworkId}}',
 									'applicability[]': '={{$parameter.options.applicability}}',
 									'chapter[]': '={{$parameter.options.chapter}}',
 									'controls[]': '={{$parameter.options.controls}}',
 									'labels[]': '={{$parameter.options.labels}}',
-									per_page: '={{ $parameter.returnAll ? 100 : $parameter.limit }}',
 								},
 							},
 							output: {
@@ -2115,18 +2073,6 @@ export class Kordon implements INodeType {
 										},
 									},
 								],
-							},
-							operations: {
-								pagination: {
-									type: 'offset',
-									properties: {
-										limitParameter: 'per_page',
-										offsetParameter: 'page',
-										pageSize: 100,
-										rootProperty: 'data',
-										type: 'query',
-									},
-								},
 							},
 						},
 					},
@@ -2168,6 +2114,7 @@ export class Kordon implements INodeType {
 				},
 				default: false,
 				description: 'Whether to return all results or only up to a given limit',
+				routing: paginationRouting,
 			},
 			{
 				displayName: 'Limit',

@@ -144,6 +144,10 @@ export class Kordon implements INodeType {
 						name: 'User',
 						value: 'user',
 					},
+					{
+						name: 'User Group',
+						value: 'user_group',
+					},
 				],
 				default: 'user',
 			},
@@ -616,6 +620,64 @@ export class Kordon implements INodeType {
 			},
 			options: [
 				{
+					name: 'Create',
+					value: 'create',
+					description: 'Create a new business process',
+					action: 'Create a business process',
+					routing: {
+						send: {
+							preSend: [
+								async function (this, requestOptions) {
+									const body = requestOptions.body as any;
+									
+									// Handle label_ids if present
+									if (body.business_process && body.business_process.label_ids) {
+										if (typeof body.business_process.label_ids === 'string') {
+											body.business_process.label_ids = (body.business_process.label_ids as string).split(',').map((id: string) => id.trim());
+										} else if (!Array.isArray(body.business_process.label_ids)) {
+											body.business_process.label_ids = [body.business_process.label_ids];
+										}
+									}
+
+									// Log request details for debugging
+									this.logger.info('=== Kordon API Request (Create Business Process) ===');
+									this.logger.info('URL: ' + requestOptions.url);
+									this.logger.info('Method: ' + requestOptions.method);
+									this.logger.info('Body: ' + JSON.stringify(requestOptions.body));
+									this.logger.info('========================');
+									
+									return requestOptions;
+								},
+							],
+						},
+						request: {
+							method: 'POST',
+							url: '/business-processes',
+							body: {
+								business_process: {
+									title: '={{$parameter.title}}',
+									owner_id: '={{$parameter.owner_id}}',
+									criticality: '={{$parameter.additionalFields.criticality}}',
+									monetary_value: '={{$parameter.additionalFields.monetary_value}}',
+									currency: '={{$parameter.additionalFields.currency}}',
+									label_ids: '={{$parameter.additionalFields.labels}}',
+									description: '={{$parameter.additionalFields.description}}',
+								},
+							},
+						},
+						output: {
+							postReceive: [
+								{
+									type: 'rootProperty',
+									properties: {
+										property: 'data',
+									},
+								},
+							],
+						},
+					},
+				},
+				{
 					name: 'Get',
 					value: 'get',
 					description: 'Get a single business process',
@@ -685,6 +747,135 @@ export class Kordon implements INodeType {
 				},
 			],
 			default: 'getMany',
+		},
+
+		// ------------------------
+		// Business Process: Create - Fields
+		// ------------------------
+		{
+			displayName: 'Title',
+			name: 'title',
+			type: 'string',
+			required: true,
+			displayOptions: {
+				show: {
+					resource: ['business_process'],
+					operation: ['create'],
+				},
+			},
+			default: '',
+			description: 'The title of the business process',
+		},
+		{
+			displayName: 'Owner ID',
+			name: 'owner_id',
+			type: 'string',
+			required: true,
+			displayOptions: {
+				show: {
+					resource: ['business_process'],
+					operation: ['create'],
+				},
+			},
+			default: '',
+			description: 'The ID of the owner',
+		},
+		{
+			displayName: 'Additional Fields',
+			name: 'additionalFields',
+			type: 'collection',
+			placeholder: 'Add Field',
+			default: {},
+			displayOptions: {
+				show: {
+					resource: ['business_process'],
+					operation: ['create'],
+				},
+			},
+			options: [
+				{
+					displayName: 'Criticality',
+					name: 'criticality',
+					type: 'options',
+					options: [
+						{
+							name: 'Low',
+							value: 'low',
+						},
+						{
+							name: 'Medium',
+							value: 'medium',
+						},
+						{
+							name: 'High',
+							value: 'high',
+						},
+					],
+					default: 'low',
+					description: 'The criticality of the business process',
+				},
+				{
+					displayName: 'Monetary Value',
+					name: 'monetary_value',
+					type: 'number',
+					default: 0,
+					description: 'The monetary value of the business process',
+				},
+				{
+					displayName: 'Currency',
+					name: 'currency',
+					type: 'options',
+					options: [
+						{
+							name: 'USD',
+							value: 'USD',
+						},
+						{
+							name: 'EUR',
+							value: 'EUR',
+						},
+						{
+							name: 'GBP',
+							value: 'GBP',
+						},
+						{
+							name: 'JPY',
+							value: 'JPY',
+						},
+						{
+							name: 'CAD',
+							value: 'CAD',
+						},
+						{
+							name: 'AUD',
+							value: 'AUD',
+						},
+					],
+					default: 'USD',
+					description: 'The currency of the monetary value',
+				},
+				{
+					displayName: 'Labels',
+					name: 'labels',
+					type: 'string',
+					default: '',
+					placeholder: 'e.g., 81bb6227-005f-4b1e-bf11-fbb9b96adb4d',
+					description: 'Comma-separated list of label IDs to attach to the business process',
+					typeOptions: {
+						multipleValues: true,
+					},
+				},
+				{
+					displayName: 'Description',
+					name: 'description',
+					type: 'string',
+					typeOptions: {
+						rows: 4,
+					},
+					default: '',
+					description: 'The description of the business process',
+				},
+			],
 		},
 
 		// ------------------------
@@ -882,15 +1073,43 @@ export class Kordon implements INodeType {
 						description: 'Create a new control',
 						action: 'Create a control',
 						routing: {
+							send: {
+								preSend: [
+									async function (this, requestOptions) {
+										const body = requestOptions.body as any;
+										
+										// Handle label_ids if present
+										if (body.control && body.control.label_ids) {
+											if (typeof body.control.label_ids === 'string') {
+												body.control.label_ids = (body.control.label_ids as string).split(',').map((id: string) => id.trim());
+											} else if (!Array.isArray(body.control.label_ids)) {
+												body.control.label_ids = [body.control.label_ids];
+											}
+										}
+
+										// Log request details for debugging
+										this.logger.info('=== Kordon API Request (Create Control) ===');
+										this.logger.info('URL: ' + requestOptions.url);
+										this.logger.info('Method: ' + requestOptions.method);
+										this.logger.info('Body: ' + JSON.stringify(requestOptions.body));
+										this.logger.info('========================');
+										
+										return requestOptions;
+									},
+								],
+							},
 							request: {
 								method: 'POST',
 								url: '/controls',
 								body: {
-									title: '={{$parameter.title}}',
-									owner_id: '={{$parameter.ownerId}}',
-									kind: '={{$parameter.kind}}',
-									begins_at: '={{$parameter.beginsAt}}',
-									description: '={{$parameter.additionalFields.description}}',
+									control: {
+										title: '={{$parameter.title}}',
+										owner_id: '={{$parameter.ownerId}}',
+										kind: '={{$parameter.kind}}',
+										begins_at: '={{$parameter.beginsAt}}',
+										description: '={{$parameter.additionalFields.description}}',
+										label_ids: '={{$parameter.additionalFields.labels}}',
+									},
 								},
 							},
 							output: {
@@ -1128,6 +1347,17 @@ export class Kordon implements INodeType {
 						type: 'string',
 						default: '',
 						description: 'Detailed description of the control (HTML supported)',
+					},
+					{
+						displayName: 'Labels',
+						name: 'labels',
+						type: 'string',
+						default: '',
+						placeholder: 'e.g., 81bb6227-005f-4b1e-bf11-fbb9b96adb4d',
+						description: 'Comma-separated list of label IDs to attach to the control',
+						typeOptions: {
+							multipleValues: true,
+						},
 					},
 				],
 			},
@@ -1646,6 +1876,34 @@ export class Kordon implements INodeType {
 				},
 				options: [
 					{
+						name: 'Create',
+						value: 'create',
+						description: 'Create a new user',
+						action: 'Create a user',
+						routing: {
+							request: {
+								method: 'POST',
+								url: '/settings/users',
+								body: {
+									name: '={{$parameter.name}}',
+									email: '={{$parameter.email}}',
+									role: '={{$parameter.role}}',
+									active: '={{$parameter.active}}',
+								},
+							},
+							output: {
+								postReceive: [
+									{
+										type: 'rootProperty',
+										properties: {
+											property: 'data',
+										},
+									},
+								],
+							},
+						},
+					},
+					{
 						name: 'Get',
 						value: 'get',
 						description: 'Get a single user',
@@ -1695,6 +1953,82 @@ export class Kordon implements INodeType {
 			},
 
 			// ------------------------
+			// User: Create - Fields
+			// ------------------------
+			{
+				displayName: 'Name',
+				name: 'name',
+				type: 'string',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: ['user'],
+						operation: ['create'],
+					},
+				},
+				default: '',
+				description: 'Full name of the user',
+			},
+			{
+				displayName: 'Email',
+				name: 'email',
+				type: 'string',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: ['user'],
+						operation: ['create'],
+					},
+				},
+				default: '',
+				description: 'Email address of the user',
+			},
+			{
+				displayName: 'Role',
+				name: 'role',
+				type: 'options',
+				displayOptions: {
+					show: {
+						resource: ['user'],
+						operation: ['create'],
+					},
+				},
+				options: [
+					{
+						name: 'User',
+						value: 'user',
+					},
+					{
+						name: 'Manager',
+						value: 'manager',
+					},
+					{
+						name: 'Auditor',
+						value: 'auditor',
+					},
+					{
+						name: 'Admin',
+						value: 'admin',
+					},
+				],
+				default: 'user',
+				description: 'Role to assign to the user',
+			},
+			{
+				displayName: 'Active',
+				name: 'active',
+				type: 'boolean',
+				displayOptions: {
+					show: {
+						resource: ['user'],
+						operation: ['create'],
+					},
+				},
+				default: true,
+				description: 'Whether the user is active',
+			},
+
+			// ------------------------
 			// User: Get - Fields
 			// ------------------------
 			{
@@ -1737,6 +2071,156 @@ export class Kordon implements INodeType {
 				displayOptions: {
 					show: {
 						resource: ['user'],
+						operation: ['getMany'],
+						returnAll: [false],
+					},
+				},
+				typeOptions: {
+					minValue: 1,
+				},
+				default: 50,
+				description: 'Max number of results to return',
+			},
+
+			// ------------------------
+			// User Group - Operation
+			// ------------------------
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				displayOptions: {
+					show: {
+						resource: ['user_group'],
+					},
+				},
+				options: [
+					{
+						name: 'Create',
+						value: 'create',
+						description: 'Create a new user group',
+						action: 'Create a user group',
+						routing: {
+							request: {
+								method: 'POST',
+								url: '/settings/user-groups',
+								body: {
+									user_group: {
+										name: '={{$parameter.name}}',
+										description: '={{$parameter.description}}',
+										color: '={{$parameter.color}}',
+										include_me: false,
+									},
+								},
+							},
+							output: {
+								postReceive: [
+									{
+										type: 'rootProperty',
+										properties: {
+											property: 'data',
+										},
+									},
+								],
+							},
+						},
+					},
+					{
+						name: 'Get Many',
+						value: 'getMany',
+						description: 'Get a list of user groups',
+						action: 'Get many user groups',
+						routing: {
+							request: {
+								method: 'GET',
+								url: '/settings/user-groups',
+								returnFullResponse: true,
+							},
+							output: {
+								postReceive: [
+									{
+										type: 'rootProperty',
+										properties: {
+											property: 'data',
+										},
+									},
+								],
+							},
+						},
+					},
+				],
+				default: 'create',
+			},
+
+			// ------------------------
+			// User Group: Create - Fields
+			// ------------------------
+			{
+				displayName: 'Name',
+				name: 'name',
+				type: 'string',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: ['user_group'],
+						operation: ['create'],
+					},
+				},
+				default: '',
+				description: 'Name of the user group',
+			},
+			{
+				displayName: 'Description',
+				name: 'description',
+				type: 'string',
+				displayOptions: {
+					show: {
+						resource: ['user_group'],
+						operation: ['create'],
+					},
+				},
+				default: '',
+				description: 'Description of the user group',
+			},
+			{
+				displayName: 'Color',
+				name: 'color',
+				type: 'color',
+				displayOptions: {
+					show: {
+						resource: ['user_group'],
+						operation: ['create'],
+					},
+				},
+				default: '#5CDBD3',
+				description: 'Color of the user group',
+			},
+
+			// ------------------------
+			// User Group: Get Many - Options
+			// ------------------------
+			{
+				displayName: 'Return All',
+				name: 'returnAll',
+				type: 'boolean',
+				displayOptions: {
+					show: {
+						resource: ['user_group'],
+						operation: ['getMany'],
+					},
+				},
+				default: false,
+				description: 'Whether to return all results or only up to a given limit',
+				routing: paginationRouting,
+			},
+			{
+				displayName: 'Limit',
+				name: 'limit',
+				type: 'number',
+				displayOptions: {
+					show: {
+						resource: ['user_group'],
 						operation: ['getMany'],
 						returnAll: [false],
 					},
@@ -2232,8 +2716,286 @@ export class Kordon implements INodeType {
 						},
 					},
 				},
+				{
+					name: 'Create',
+					value: 'create',
+					description: 'Create a new finding',
+					action: 'Create a finding',
+					routing: {
+						send: {
+							preSend: [
+								async function (this, requestOptions) {
+									const body = requestOptions.body as any;
+									
+									// Handle label_ids if present
+									if (body.finding && body.finding.label_ids) {
+										if (typeof body.finding.label_ids === 'string') {
+											body.finding.label_ids = (body.finding.label_ids as string).split(',').map((id: string) => id.trim());
+										} else if (!Array.isArray(body.finding.label_ids)) {
+											body.finding.label_ids = [body.finding.label_ids];
+										}
+									}
+
+									// Log request details for debugging
+									this.logger.info('=== Kordon API Request (Create Finding) ===');
+									this.logger.info('URL: ' + requestOptions.url);
+									this.logger.info('Method: ' + requestOptions.method);
+									this.logger.info('Body: ' + JSON.stringify(requestOptions.body));
+									this.logger.info('========================');
+									
+									return requestOptions;
+								},
+							],
+						},
+						request: {
+							method: 'POST',
+							url: '/findings',
+							body: {
+								finding: {
+									title: '={{$parameter.title}}',
+									kind: '={{$parameter.kind}}',
+									owner_group_id: '={{$parameter.ownerGroupId}}',
+									manager_group_id: '={{$parameter.managerGroupId}}',
+									state: '={{$parameter.state}}',
+									priority: '={{$parameter.priority}}',
+									source: '={{$parameter.source}}',
+									date_discovered: '={{$parameter.dateDiscovered}}',
+									description: '={{$parameter.additionalFields.description}}',
+									label_ids: '={{$parameter.additionalFields.labels}}',
+								},
+							},
+						},
+						output: {
+							postReceive: [
+								{
+									type: 'rootProperty',
+									properties: {
+										property: 'data',
+									},
+								},
+							],
+						},
+					},
+				},
 			],
 			default: 'getMany',
+		},
+
+		// ------------------------
+		// Finding: Create - Fields
+		// ------------------------
+		{
+			displayName: 'Title',
+			name: 'title',
+			type: 'string',
+			required: true,
+			displayOptions: {
+				show: {
+					resource: ['finding'],
+					operation: ['create'],
+				},
+			},
+			default: '',
+			description: 'The title of the finding',
+		},
+		{
+			displayName: 'Kind',
+			name: 'kind',
+			type: 'options',
+			required: true,
+			displayOptions: {
+				show: {
+					resource: ['finding'],
+					operation: ['create'],
+				},
+			},
+			options: [
+				{
+					name: 'OFI',
+					value: 'ofi',
+				},
+				{
+					name: 'Incident',
+					value: 'incident',
+				},
+				{
+					name: 'NCR',
+					value: 'ncr',
+				},
+			],
+			default: 'incident',
+			description: 'The kind of finding',
+		},
+		{
+			displayName: 'Owner ID',
+			name: 'ownerGroupId',
+			type: 'string',
+			required: true,
+			displayOptions: {
+				show: {
+					resource: ['finding'],
+					operation: ['create'],
+				},
+			},
+			default: '',
+			description: 'The ID of the owner',
+		},
+		{
+			displayName: 'Manager ID',
+			name: 'managerGroupId',
+			type: 'string',
+			required: true,
+			displayOptions: {
+				show: {
+					resource: ['finding'],
+					operation: ['create'],
+				},
+			},
+			default: '',
+			description: 'The ID of the manager',
+		},
+		{
+			displayName: 'State',
+			name: 'state',
+			type: 'options',
+			required: true,
+			displayOptions: {
+				show: {
+					resource: ['finding'],
+					operation: ['create'],
+				},
+			},
+			options: [
+				{
+					name: 'Open',
+					value: 'open',
+				},
+				{
+					name: 'In Progress',
+					value: 'in_progress',
+				},
+				{
+					name: 'Resolved',
+					value: 'resolved',
+				},
+				{
+					name: 'Closed',
+					value: 'closed',
+				},
+			],
+			default: 'open',
+			description: 'The state of the finding',
+		},
+		{
+			displayName: 'Priority',
+			name: 'priority',
+			type: 'options',
+			required: true,
+			displayOptions: {
+				show: {
+					resource: ['finding'],
+					operation: ['create'],
+				},
+			},
+			options: [
+				{
+					name: 'High',
+					value: 'high',
+				},
+				{
+					name: 'Medium',
+					value: 'medium',
+				},
+				{
+					name: 'Low',
+					value: 'low',
+				},
+			],
+			default: 'medium',
+			description: 'The priority of the finding',
+		},
+		{
+			displayName: 'Source',
+			name: 'source',
+			type: 'options',
+			required: true,
+			displayOptions: {
+				show: {
+					resource: ['finding'],
+					operation: ['create'],
+				},
+			},
+			options: [
+				{
+					name: 'Audit',
+					value: 'audit',
+				},
+				{
+					name: 'Incident',
+					value: 'incident',
+				},
+				{
+					name: 'Assessment',
+					value: 'assessment',
+				},
+				{
+					name: 'Observation',
+					value: 'observation',
+				},
+				{
+					name: 'Report',
+					value: 'report',
+				},
+			],
+			default: 'audit',
+			description: 'The source of the finding',
+		},
+		{
+			displayName: 'Date Discovered',
+			name: 'dateDiscovered',
+			type: 'dateTime',
+			required: true,
+			displayOptions: {
+				show: {
+					resource: ['finding'],
+					operation: ['create'],
+				},
+			},
+			default: '',
+			description: 'Date when the finding was discovered',
+		},
+		{
+			displayName: 'Additional Fields',
+			name: 'additionalFields',
+			type: 'collection',
+			placeholder: 'Add Field',
+			default: {},
+			displayOptions: {
+				show: {
+					resource: ['finding'],
+					operation: ['create'],
+				},
+			},
+			options: [
+				{
+					displayName: 'Description',
+					name: 'description',
+					type: 'string',
+					default: '',
+					description: 'Detailed description of the finding (HTML supported)',
+				},
+				{
+					displayName: 'Labels',
+					name: 'labels',
+					type: 'string',
+					default: '',
+					placeholder: 'e.g., 81bb6227-005f-4b1e-bf11-fbb9b96adb4d',
+					description: 'Comma-separated list of label IDs to attach to the finding',
+					typeOptions: {
+						multipleValues: true,
+					},
+				},
+			],
 		},
 
 		// ------------------------
@@ -2427,6 +3189,33 @@ export class Kordon implements INodeType {
 				},
 				options: [
 					{
+						name: 'Create',
+						value: 'create',
+						description: 'Create a new framework',
+						action: 'Create a framework',
+						routing: {
+							request: {
+								method: 'POST',
+								url: '/regulations',
+								body: {
+									regulation: {
+										title: '={{$parameter.title}}',
+									},
+								},
+							},
+							output: {
+								postReceive: [
+									{
+										type: 'rootProperty',
+										properties: {
+											property: 'data',
+										},
+									},
+								],
+							},
+						},
+					},
+					{
 						name: 'Get',
 						value: 'get',
 						description: 'Get a single framework',
@@ -2473,6 +3262,24 @@ export class Kordon implements INodeType {
 					},
 				],
 				default: 'getMany',
+			},
+
+			// ------------------------
+			// Framework: Create - Fields
+			// ------------------------
+			{
+				displayName: 'Title',
+				name: 'title',
+				type: 'string',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: ['regulation'],
+						operation: ['create'],
+					},
+				},
+				default: '',
+				description: 'The name of the framework',
 			},
 
 			// ------------------------
@@ -2621,17 +3428,44 @@ export class Kordon implements INodeType {
 						description: 'Create a new risk',
 						action: 'Create a risk',
 						routing: {
+							send: {
+								preSend: [
+									async function (this, requestOptions) {
+										const body = requestOptions.body as any;
+										
+										// Handle label_ids if present
+										if (body.risk && body.risk.label_ids) {
+											if (typeof body.risk.label_ids === 'string') {
+												body.risk.label_ids = (body.risk.label_ids as string).split(',').map((id: string) => id.trim());
+											} else if (!Array.isArray(body.risk.label_ids)) {
+												body.risk.label_ids = [body.risk.label_ids];
+											}
+										}
+
+										// Log request details for debugging
+										this.logger.info('=== Kordon API Request (Create Risk) ===');
+										this.logger.info('URL: ' + requestOptions.url);
+										this.logger.info('Method: ' + requestOptions.method);
+										this.logger.info('Body: ' + JSON.stringify(requestOptions.body));
+										this.logger.info('========================');
+										
+										return requestOptions;
+									},
+								],
+							},
 							request: {
 								method: 'POST',
 								url: '/risks',
 								body: {
-									title: '={{$parameter.title}}',
-									manager_id: '={{$parameter.managerId}}',
-									owner_id: '={{$parameter.ownerId}}',
-									impact: '={{$parameter.additionalFields.impact}}',
-									probability: '={{$parameter.additionalFields.probability}}',
-									description: '={{$parameter.additionalFields.description}}',
-									label_ids: '={{$parameter.additionalFields.labels}}',
+									risk: {
+										title: '={{$parameter.title}}',
+										manager_id: '={{$parameter.managerId}}',
+										owner_id: '={{$parameter.ownerId}}',
+										impact: '={{$parameter.additionalFields.impact}}',
+										probability: '={{$parameter.additionalFields.probability}}',
+										description: '={{$parameter.additionalFields.description}}',
+										label_ids: '={{$parameter.additionalFields.labels}}',
+									},
 								},
 							},
 							output: {
@@ -2742,7 +3576,11 @@ export class Kordon implements INodeType {
 						name: 'labels',
 						type: 'string',
 						default: '',
-						description: 'Comma-separated list of label IDs',
+						placeholder: 'e.g., 81bb6227-005f-4b1e-bf11-fbb9b96adb4d',
+						description: 'Comma-separated list of label IDs to attach to the risk',
+						typeOptions: {
+							multipleValues: true,
+						},
 					},
 				],
 			},
@@ -2959,8 +3797,180 @@ export class Kordon implements INodeType {
 							},
 						},
 					},
+					{
+						name: 'Create',
+						value: 'create',
+						description: 'Create a new requirement',
+						action: 'Create a requirement',
+						routing: {
+							send: {
+								preSend: [
+									async function (this, requestOptions) {
+										const body = requestOptions.body as any;
+										
+										// Handle label_ids if present
+										if (body.requirement && body.requirement.label_ids) {
+											if (typeof body.requirement.label_ids === 'string') {
+												body.requirement.label_ids = (body.requirement.label_ids as string).split(',').map((id: string) => id.trim());
+											} else if (!Array.isArray(body.requirement.label_ids)) {
+												body.requirement.label_ids = [body.requirement.label_ids];
+											}
+										}
+
+										// Handle regulation_ids (Framework ID) - ensure it's an array
+										if (body.requirement && body.requirement.regulation_ids) {
+											if (typeof body.requirement.regulation_ids === 'string') {
+												body.requirement.regulation_ids = [body.requirement.regulation_ids];
+											} else if (!Array.isArray(body.requirement.regulation_ids)) {
+												body.requirement.regulation_ids = [body.requirement.regulation_ids];
+											}
+										}
+										
+										return requestOptions;
+									},
+								],
+							},
+							request: {
+								method: 'POST',
+								url: '/requirements',
+								body: {
+									requirement: {
+										title: '={{$parameter.title}}',
+										regulation_ids: '={{$parameter.frameworkId}}',
+										description: '={{$parameter.additionalFields.description}}',
+										chapter_name: '={{$parameter.additionalFields.chapterName}}',
+										chapter_number: '={{$parameter.additionalFields.chapterNumber}}',
+										paragraph_number: '={{$parameter.additionalFields.paragraphNumber}}',
+										meaning: '={{$parameter.additionalFields.meaning}}',
+										label_ids: '={{$parameter.additionalFields.labels}}',
+										is_applicable: '={{$parameter.additionalFields.isApplicable}}',
+									},
+								},
+							},
+							output: {
+								postReceive: [
+									{
+										type: 'rootProperty',
+										properties: {
+											property: 'data',
+										},
+									},
+								],
+							},
+						},
+					},
 				],
 				default: 'getMany',
+			},
+
+			// ------------------------
+			// Requirement: Create - Fields
+			// ------------------------
+			{
+				displayName: 'Title',
+				name: 'title',
+				type: 'string',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: ['requirement'],
+						operation: ['create'],
+					},
+				},
+				default: '',
+				description: 'The title of the requirement',
+			},
+			{
+				displayName: 'Framework ID',
+				name: 'frameworkId',
+				type: 'string',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: ['requirement'],
+						operation: ['create'],
+					},
+				},
+				default: '',
+				description: 'The ID of the framework (regulation) this requirement belongs to',
+			},
+			{
+				displayName: 'Additional Fields',
+				name: 'additionalFields',
+				type: 'collection',
+				placeholder: 'Add Field',
+				default: {},
+				displayOptions: {
+					show: {
+						resource: ['requirement'],
+						operation: ['create'],
+					},
+				},
+				options: [
+					{
+						displayName: 'Description',
+						name: 'description',
+						type: 'string',
+						default: '',
+						description: 'Detailed description of the requirement (HTML supported)',
+					},
+					{
+						displayName: 'Chapter Name',
+						name: 'chapterName',
+						type: 'string',
+						default: '',
+						description: 'Name of the chapter',
+					},
+					{
+						displayName: 'Chapter Number',
+						name: 'chapterNumber',
+						type: 'string',
+						default: '',
+						description: 'Number of the chapter',
+					},
+					{
+						displayName: 'Paragraph Number',
+						name: 'paragraphNumber',
+						type: 'string',
+						default: '',
+						description: 'Number of the paragraph',
+					},
+					{
+						displayName: 'Meaning',
+						name: 'meaning',
+						type: 'string',
+						default: '',
+						description: 'Explanation of the requirement meaning',
+					},
+					{
+						displayName: 'Applicability',
+						name: 'isApplicable',
+						type: 'options',
+						options: [
+							{
+								name: 'Applicable',
+								value: true,
+							},
+							{
+								name: 'Not Applicable',
+								value: false,
+							},
+						],
+						default: true,
+						description: 'Whether the requirement is applicable',
+					},
+					{
+						displayName: 'Labels',
+						name: 'labels',
+						type: 'string',
+						default: '',
+						placeholder: 'e.g., 81bb6227-005f-4b1e-bf11-fbb9b96adb4d',
+						description: 'Comma-separated list of label IDs to attach to the requirement',
+						typeOptions: {
+							multipleValues: true,
+						},
+					},
+				],
 			},
 
 			// ------------------------

@@ -1,4 +1,13 @@
 import { NodeConnectionTypes, type INodeType, type INodeTypeDescription } from 'n8n-workflow';
+import { assetDeleteOperation } from './descriptions/AssetDescription';
+import { businessProcessDeleteOperation } from './descriptions/BusinessProcessDescription';
+import { controlDeleteOperation } from './descriptions/ControlDescription';
+import { findingDeleteOperation } from './descriptions/FindingDescription';
+import { frameworkDeleteOperation } from './descriptions/FrameworkDescription';
+import { requirementDeleteOperation } from './descriptions/RequirementDescription';
+import { riskDeleteOperation } from './descriptions/RiskDescription';
+import { taskDeleteOperation } from './descriptions/TaskDescription';
+import { vendorDeleteOperation } from './descriptions/VendorDescription';
 
 // Reusable pagination routing config for all Get Many operations
 const paginationRouting = {
@@ -319,7 +328,7 @@ export class Kordon implements INodeType {
 						send: {
 							preSend: [
 								async function (this, requestOptions) {
-									const updateFields = this.getNodeParameter('updateFields', {}) as { [key: string]: any };
+							const updateFields = this.getNodeParameter('updateFields', 0) as { [key: string]: any };
 									const asset: { [key: string]: any } = {};
 
 									// Map UI fields to API fields
@@ -383,6 +392,7 @@ export class Kordon implements INodeType {
 						},
 					},
 				},
+				assetDeleteOperation,
 			],
 			default: 'getMany',
 		},
@@ -637,7 +647,7 @@ export class Kordon implements INodeType {
 		},
 
 		// ------------------------
-		// Asset: Get - Fields
+		// Asset: Get/Delete - Fields
 		// ------------------------
 		{
 			displayName: 'Asset ID',
@@ -647,12 +657,12 @@ export class Kordon implements INodeType {
 			displayOptions: {
 				show: {
 					resource: ['asset'],
-					operation: ['get'],
+					operation: ['get', 'delete'],
 				},
 			},
 			default: '',
 			placeholder: 'e.g., 550e8400-e29b-41d4-a716-446655440000',
-			description: 'The ID of the asset to retrieve',
+			description: 'The ID of the asset to retrieve or delete',
 		},
 
 		// ------------------------
@@ -985,6 +995,7 @@ export class Kordon implements INodeType {
 						},
 					},
 				},
+			businessProcessDeleteOperation,
 			],
 			default: 'getMany',
 		},
@@ -1249,7 +1260,7 @@ export class Kordon implements INodeType {
 		},
 
 		// ------------------------
-		// Business Process: Get - Fields
+		// Business Process: Get/Delete - Fields
 		// ------------------------
 		{
 			displayName: 'Business Process ID',
@@ -1259,12 +1270,12 @@ export class Kordon implements INodeType {
 			displayOptions: {
 				show: {
 					resource: ['business_process'],
-					operation: ['get'],
+					operation: ['get', 'delete'],
 				},
 			},
 			default: '',
 			placeholder: 'e.g., 550e8400-e29b-41d4-a716-446655440000',
-			description: 'The ID of the business process to retrieve',
+			description: 'The ID of the business process to retrieve or delete',
 		},
 
 		// ------------------------
@@ -1565,28 +1576,29 @@ export class Kordon implements INodeType {
 							},
 						},
 					},
+				controlDeleteOperation,
 				],
 				default: 'getMany',
 			},
 
 			// ------------------------
-			// Control: Get - Fields
-			// ------------------------
-			{
-				displayName: 'Control ID',
-				name: 'controlId',
-				type: 'string',
-				required: true,
-				displayOptions: {
-					show: {
-						resource: ['control'],
-						operation: ['get'],
-					},
+		// Control: Get/Delete - Fields
+		// ------------------------
+		{
+			displayName: 'Control ID',
+			name: 'controlId',
+			type: 'string',
+			required: true,
+			displayOptions: {
+				show: {
+					resource: ['control'],
+					operation: ['get', 'delete'],
 				},
-				default: '',
-				placeholder: 'e.g., 550e8400-e29b-41d4-a716-446655440000',
-				description: 'The ID of the control to retrieve',
 			},
+			default: '',
+			placeholder: 'e.g., 550e8400-e29b-41d4-a716-446655440000',
+			description: 'The ID of the control to retrieve or delete',
+		},
 
 			// ------------------------
 			// Control: Get Many - Options
@@ -2121,6 +2133,7 @@ export class Kordon implements INodeType {
 							},
 						},
 					},
+				vendorDeleteOperation,
 				],
 				default: 'getMany',
 			},
@@ -2497,23 +2510,23 @@ export class Kordon implements INodeType {
 			},
 
 			// ------------------------
-			// Vendor: Get - Fields
-			// ------------------------
-			{
-				displayName: 'Vendor ID',
-				name: 'vendorId',
-				type: 'string',
-				required: true,
-				displayOptions: {
-					show: {
-						resource: ['vendor'],
-						operation: ['get'],
-					},
+		// Vendor: Get/Delete - Fields
+		// ------------------------
+		{
+			displayName: 'Vendor ID',
+			name: 'vendorId',
+			type: 'string',
+			required: true,
+			displayOptions: {
+				show: {
+					resource: ['vendor'],
+					operation: ['get', 'delete'],
 				},
-				default: '',
-				placeholder: 'e.g., 550e8400-e29b-41d4-a716-446655440000',
-				description: 'The ID of the vendor to retrieve',
 			},
+			default: '',
+			placeholder: 'e.g., 550e8400-e29b-41d4-a716-446655440000',
+			description: 'The ID of the vendor to retrieve or delete',
+		},
 
 			// ------------------------
 			// Vendor: Get Many - Options
@@ -2722,6 +2735,42 @@ export class Kordon implements INodeType {
 							},
 						},
 					},
+				{
+					name: 'Update',
+					value: 'update',
+					description: 'Update a user',
+					action: 'Update a user',
+					routing: {
+						send: {
+							preSend: [
+								async function (this, requestOptions) {
+									const updateFields = this.getNodeParameter('updateFields', 0) as { [key: string]: any };
+									
+									// Wrap in 'user' object as expected by API
+									requestOptions.body = {
+										user: updateFields,
+									};
+									
+									return requestOptions;
+								},
+							],
+						},
+						request: {
+							method: 'PATCH',
+							url: '=/settings/users/{{$parameter.userId}}',
+						},
+						output: {
+							postReceive: [
+								{
+									type: 'rootProperty',
+									properties: {
+										property: 'data',
+									},
+								},
+							],
+						},
+					},
+				},
 				],
 				default: 'getMany',
 			},
@@ -2800,6 +2849,87 @@ export class Kordon implements INodeType {
 				},
 				default: true,
 				description: 'Whether the user is active',
+			},
+
+
+			// ------------------------
+			// User: Update - Fields
+			// ------------------------
+			{
+				displayName: 'User ID',
+				name: 'userId',
+				type: 'string',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: ['user'],
+						operation: ['update'],
+					},
+				},
+				default: '',
+				placeholder: 'e.g., 2a7c8cf0-a4c0-4cd5-83f4-0a5ebdf1fa83',
+				description: 'The ID of the user to update',
+			},
+			{
+				displayName: 'Update Fields',
+				name: 'updateFields',
+				type: 'collection',
+				placeholder: 'Add Field',
+				default: {},
+				displayOptions: {
+					show: {
+						resource: ['user'],
+						operation: ['update'],
+					},
+				},
+				options: [
+					{
+						displayName: 'Name',
+						name: 'name',
+						type: 'string',
+						default: '',
+						description: 'The name of the user',
+					},
+					{
+						displayName: 'Email',
+						name: 'email',
+						type: 'string',
+						default: '',
+						description: 'The email of the user',
+					},
+					{
+						displayName: 'Role',
+						name: 'role',
+						type: 'options',
+						options: [
+							{
+								name: 'User',
+								value: 'user',
+							},
+							{
+								name: 'Manager',
+								value: 'manager',
+							},
+							{
+								name: 'Auditor',
+								value: 'auditor',
+							},
+							{
+								name: 'Admin',
+								value: 'admin',
+							},
+						],
+						default: 'user',
+						description: 'Role to assign to the user',
+					},
+					{
+						displayName: 'Active',
+						name: 'active',
+						type: 'boolean',
+						default: true,
+						description: 'Whether the user is active',
+					},
+				],
 			},
 
 			// ------------------------
@@ -3178,6 +3308,7 @@ export class Kordon implements INodeType {
 							},
 						},
 					},
+				taskDeleteOperation,
 				],
 				default: 'getMany',
 			},
@@ -3480,7 +3611,7 @@ export class Kordon implements INodeType {
 			},
 
 			// ------------------------
-			// Task: Get - Fields
+			// Task: Get/Delete - Fields
 			// ------------------------
 			{
 				displayName: 'Task ID',
@@ -3490,12 +3621,12 @@ export class Kordon implements INodeType {
 				displayOptions: {
 					show: {
 						resource: ['task'],
-						operation: ['get'],
+						operation: ['get', 'delete'],
 					},
 				},
 				default: '',
 				placeholder: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
-				description: 'The ID of the task to retrieve',
+				description: 'The ID of the task to retrieve or delete',
 			},
 
 			// ------------------------
@@ -3805,6 +3936,7 @@ export class Kordon implements INodeType {
 						},
 					},
 				},
+			findingDeleteOperation,
 			],
 			default: 'getMany',
 		},
@@ -4203,7 +4335,7 @@ export class Kordon implements INodeType {
 		},
 
 		// ------------------------
-		// Finding: Get - Fields
+		// Finding: Get/Delete - Fields
 		// ------------------------
 		{
 			displayName: 'Finding ID',
@@ -4213,12 +4345,12 @@ export class Kordon implements INodeType {
 			displayOptions: {
 				show: {
 					resource: ['finding'],
-					operation: ['get'],
+					operation: ['get', 'delete'],
 				},
 			},
 			default: '',
 			placeholder: 'e.g., 550e8400-e29b-41d4-a716-446655440000',
-			description: 'The ID of the finding to retrieve',
+			description: 'The ID of the finding to retrieve or delete',
 		},
 
 		// ------------------------
@@ -4504,6 +4636,7 @@ export class Kordon implements INodeType {
 							},
 						},
 					},
+				frameworkDeleteOperation,
 				],
 				default: 'getMany',
 			},
@@ -4568,7 +4701,7 @@ export class Kordon implements INodeType {
 			},
 
 			// ------------------------
-			// Framework: Get - Fields
+			// Framework: Get/Delete - Fields
 			// ------------------------
 			{
 				displayName: 'Framework ID',
@@ -4578,12 +4711,12 @@ export class Kordon implements INodeType {
 				displayOptions: {
 					show: {
 						resource: ['regulation'],
-						operation: ['get'],
+						operation: ['get', 'delete'],
 					},
 				},
 				default: '',
 				placeholder: 'b698a0ed-ad82-4468-900e-3b6eb3f5eb9b',
-				description: 'The ID of the framework to retrieve',
+				description: 'The ID of the framework to retrieve or delete',
 			},
 
 			// ------------------------
@@ -4836,6 +4969,7 @@ export class Kordon implements INodeType {
 							},
 						},
 					},
+				riskDeleteOperation,
 				],
 				default: 'getMany',
 			},
@@ -5036,23 +5170,23 @@ export class Kordon implements INodeType {
 			},
 
 			// ------------------------
-			// Risk: Get - Fields
-			// ------------------------
-			{
-				displayName: 'Risk ID',
-				name: 'riskId',
-				type: 'string',
-				required: true,
-				displayOptions: {
-					show: {
-						resource: ['risk'],
-						operation: ['get'],
-					},
+		// Risk: Get/Delete - Fields
+		// ------------------------
+		{
+			displayName: 'Risk ID',
+			name: 'riskId',
+			type: 'string',
+			required: true,
+			displayOptions: {
+				show: {
+					resource: ['risk'],
+					operation: ['get', 'delete'],
 				},
-				default: '',
-				placeholder: 'e.g., 550e8400-e29b-41d4-a716-446655440000',
-				description: 'The ID of the risk to retrieve',
 			},
+			default: '',
+			placeholder: 'e.g., 550e8400-e29b-41d4-a716-446655440000',
+			description: 'The ID of the risk to retrieve or delete',
+		},
 
 			// ------------------------
 			// Risk: Get Many - Options
@@ -5378,6 +5512,7 @@ export class Kordon implements INodeType {
 							},
 						},
 					},
+				requirementDeleteOperation,
 				],
 				default: 'getMany',
 			},
@@ -5604,7 +5739,7 @@ export class Kordon implements INodeType {
 			},
 
 			// ------------------------
-			// Requirement: Get - Fields
+			// Requirement: Get/Delete - Fields
 			// ------------------------
 			{
 				displayName: 'Requirement ID',
@@ -5614,12 +5749,12 @@ export class Kordon implements INodeType {
 				displayOptions: {
 					show: {
 						resource: ['requirement'],
-						operation: ['get'],
+						operation: ['get', 'delete'],
 					},
 				},
 				default: '',
 				placeholder: 'e.g., 550e8400-e29b-41d4-a716-446655440000',
-				description: 'The ID of the requirement to retrieve',
+				description: 'The ID of the requirement to retrieve or delete',
 			},
 
 			// ------------------------

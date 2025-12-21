@@ -1,4 +1,6 @@
 # TODO
+- [ ] double check that setting a limit when querying many elements at once is respected
+- [ ] implement result sorting in get many actions for all requests 
 
 ## Completed ✅
 - [x] Implement generic pagination support for all resources (handling string-based page numbers)
@@ -40,8 +42,15 @@ The Kordon n8n node now supports all major GRC resources with full filtering cap
 ## Design & UI
 - [ ] Review n8n node logo, especially dark mode version - ensure it has good contrast and visibility in both light and dark themes
 
-## Future Enhancements (Post-MVP)
+## In Progress
 - [ ] Add Create/Update/Delete operations for all resources
+  - [x] Create Task
+  - [x] Create Risk
+  - [x] Create Control
+  - [x] Create Vendor
+  - [x] Create Asset
+
+## Future Enhancements (Post-MVP)
 - [ ] Add bulk operations
 - [ ] Add webhook triggers for Kordon events
 - [ ] Add specialized operations (e.g., "Complete Task", "Update Risk Score")

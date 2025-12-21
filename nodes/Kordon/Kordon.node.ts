@@ -257,8 +257,192 @@ export class Kordon implements INodeType {
 						},
 					},
 				},
+				{
+					name: 'Create',
+					value: 'create',
+					description: 'Create a new asset',
+					action: 'Create an asset',
+					routing: {
+						send: {
+							preSend: [
+								async function (this, requestOptions) {
+									// Handle array parameters for label_ids
+									const body = requestOptions.body as any;
+									if (body && body.asset && body.asset.label_ids) {
+										if (typeof body.asset.label_ids === 'string') {
+											body.asset.label_ids = body.asset.label_ids.split(',').map((id: string) => id.trim());
+										} else if (!Array.isArray(body.asset.label_ids)) {
+											body.asset.label_ids = [body.asset.label_ids];
+										}
+									}
+									return requestOptions;
+								},
+							],
+						},
+						request: {
+							method: 'POST',
+							url: '/assets',
+							body: {
+								asset: {
+									title: '={{$parameter.title}}',
+									manager_id: '={{$parameter.managerId}}',
+									owner_id: '={{$parameter.ownerId}}',
+									description: '={{$parameter.description}}',
+									asset_value: '={{$parameter.assetValue}}',
+									state: '={{$parameter.additionalFields.state}}',
+									label_ids: '={{$parameter.additionalFields.labels}}',
+								},
+							},
+						},
+						output: {
+							postReceive: [
+								{
+									type: 'rootProperty',
+									properties: {
+										property: 'data',
+									},
+								},
+							],
+						},
+					},
+				},
 			],
 			default: 'getMany',
+		},
+
+		// ------------------------
+		// Asset: Create - Fields
+		// ------------------------
+		{
+			displayName: 'Title',
+			name: 'title',
+			type: 'string',
+			required: true,
+			displayOptions: {
+				show: {
+					resource: ['asset'],
+					operation: ['create'],
+				},
+			},
+			default: '',
+			description: 'The title of the asset',
+		},
+		{
+			displayName: 'Manager ID',
+			name: 'managerId',
+			type: 'string',
+			required: true,
+			displayOptions: {
+				show: {
+					resource: ['asset'],
+					operation: ['create'],
+				},
+			},
+			default: '',
+			description: 'The ID of the user who manages the asset',
+		},
+		{
+			displayName: 'Owner ID',
+			name: 'ownerId',
+			type: 'string',
+			required: true,
+			displayOptions: {
+				show: {
+					resource: ['asset'],
+					operation: ['create'],
+				},
+			},
+			default: '',
+			description: 'The ID of the user who owns the asset',
+		},
+		{
+			displayName: 'Description',
+			name: 'description',
+			type: 'string',
+			required: true,
+			displayOptions: {
+				show: {
+					resource: ['asset'],
+					operation: ['create'],
+				},
+			},
+			default: '',
+			description: 'Detailed description of the asset (HTML supported)',
+		},
+		{
+			displayName: 'Asset Value',
+			name: 'assetValue',
+			type: 'options',
+			required: true,
+			displayOptions: {
+				show: {
+					resource: ['asset'],
+					operation: ['create'],
+				},
+			},
+			options: [
+				{
+					name: 'Low',
+					value: 'low',
+				},
+				{
+					name: 'Medium',
+					value: 'medium',
+				},
+				{
+					name: 'High',
+					value: 'high',
+				},
+			],
+			default: 'low',
+			description: 'The value of the asset',
+		},
+		{
+			displayName: 'Additional Fields',
+			name: 'additionalFields',
+			type: 'collection',
+			placeholder: 'Add Field',
+			default: {},
+			displayOptions: {
+				show: {
+					resource: ['asset'],
+					operation: ['create'],
+				},
+			},
+			options: [
+				{
+					displayName: 'State',
+					name: 'state',
+					type: 'options',
+					options: [
+						{
+							name: 'Live',
+							value: 'live',
+						},
+						{
+							name: 'Planned',
+							value: 'planned',
+						},
+						{
+							name: 'Deprecated',
+							value: 'deprecated',
+						},
+					],
+					default: 'live',
+					description: 'The state of the asset',
+				},
+				{
+					displayName: 'Labels',
+					name: 'labels',
+					type: 'string',
+					default: '',
+					placeholder: 'e.g., 81bb6227-005f-4b1e-bf11-fbb9b96adb4d',
+					description: 'Comma-separated list of label IDs to attach to the asset',
+					typeOptions: {
+						multipleValues: true,
+					},
+				},
+			],
 		},
 
 		// ------------------------
@@ -692,6 +876,35 @@ export class Kordon implements INodeType {
 							},
 						},
 					},
+					{
+						name: 'Create',
+						value: 'create',
+						description: 'Create a new control',
+						action: 'Create a control',
+						routing: {
+							request: {
+								method: 'POST',
+								url: '/controls',
+								body: {
+									title: '={{$parameter.title}}',
+									owner_id: '={{$parameter.ownerId}}',
+									kind: '={{$parameter.kind}}',
+									begins_at: '={{$parameter.beginsAt}}',
+									description: '={{$parameter.additionalFields.description}}',
+								},
+							},
+							output: {
+								postReceive: [
+									{
+										type: 'rootProperty',
+										properties: {
+											property: 'data',
+										},
+									},
+								],
+							},
+						},
+					},
 				],
 				default: 'getMany',
 			},
@@ -822,6 +1035,103 @@ export class Kordon implements INodeType {
 					},
 				],
 			},
+
+			// ------------------------
+			// Control: Create - Fields
+			// ------------------------
+			{
+				displayName: 'Title',
+				name: 'title',
+				type: 'string',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: ['control'],
+						operation: ['create'],
+					},
+				},
+				default: '',
+				description: 'The title of the control',
+			},
+			{
+				displayName: 'Owner ID',
+				name: 'ownerId',
+				type: 'string',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: ['control'],
+						operation: ['create'],
+					},
+				},
+				default: '',
+				description: 'The ID of the user who owns the control',
+			},
+			{
+				displayName: 'Kind',
+				name: 'kind',
+				type: 'options',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: ['control'],
+						operation: ['create'],
+					},
+				},
+				options: [
+					{
+						name: 'Policy',
+						value: 'policy',
+					},
+					{
+						name: 'Procedure',
+						value: 'procedure',
+					},
+					{
+						name: 'Technical',
+						value: 'technical',
+					},
+				],
+				default: 'policy',
+				description: 'The type of control',
+			},
+			{
+				displayName: 'Begins At',
+				name: 'beginsAt',
+				type: 'dateTime',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: ['control'],
+						operation: ['create'],
+					},
+				},
+				default: '',
+				description: 'Date when the control begins',
+			},
+			{
+				displayName: 'Additional Fields',
+				name: 'additionalFields',
+				type: 'collection',
+				placeholder: 'Add Field',
+				default: {},
+				displayOptions: {
+					show: {
+						resource: ['control'],
+						operation: ['create'],
+					},
+				},
+				options: [
+					{
+						displayName: 'Description',
+						name: 'description',
+						type: 'string',
+						default: '',
+						description: 'Detailed description of the control (HTML supported)',
+					},
+				],
+			},
+
 			// ------------------------
 			// Vendor - Operation
 			// ------------------------
@@ -923,8 +1233,263 @@ export class Kordon implements INodeType {
 							},
 						},
 					},
+					{
+						name: 'Create',
+						value: 'create',
+						description: 'Create a new vendor',
+						action: 'Create a vendor',
+						routing: {
+							send: {
+								preSend: [
+									async function (this, requestOptions) {
+										// Handle array parameters for label_ids
+										const body = requestOptions.body as any;
+										if (body && body.vendor && body.vendor.label_ids) {
+											if (typeof body.vendor.label_ids === 'string') {
+												body.vendor.label_ids = body.vendor.label_ids.split(',').map((id: string) => id.trim());
+											} else if (!Array.isArray(body.vendor.label_ids)) {
+												body.vendor.label_ids = [body.vendor.label_ids];
+											}
+										}
+
+										// Log request details for debugging
+										this.logger.info('=== Kordon Vendor Create Request ===');
+										this.logger.info('URL: ' + requestOptions.url);
+										this.logger.info('Method: ' + requestOptions.method);
+										this.logger.info('Body: ' + JSON.stringify(body));
+										this.logger.info('========================');
+
+										return requestOptions;
+									},
+								],
+							},
+							request: {
+								method: 'POST',
+								url: '/vendors',
+								body: {
+									vendor: {
+										title: '={{$parameter.title}}',
+										manager_id: '={{$parameter.managerId}}',
+										owner_id: '={{$parameter.ownerId}}',
+										state: '={{$parameter.state}}',
+										criticality: '={{$parameter.additionalFields.criticality}}',
+										description: '={{$parameter.additionalFields.description}}',
+										contact: '={{$parameter.additionalFields.contact}}',
+										country: '={{$parameter.additionalFields.country}}',
+										website: '={{$parameter.additionalFields.website}}',
+										contract_start_date: '={{$parameter.additionalFields.contractStartDate}}',
+										contract_end_date: '={{$parameter.additionalFields.contractEndDate}}',
+										personal_data_classification: '={{$parameter.additionalFields.personalDataClassification}}',
+										label_ids: '={{$parameter.additionalFields.labels}}',
+									},
+								},
+							},
+							output: {
+								postReceive: [
+									{
+										type: 'rootProperty',
+										properties: {
+											property: 'data',
+										},
+									},
+								],
+							},
+						},
+					},
 				],
 				default: 'getMany',
+			},
+
+			// ------------------------
+			// Vendor: Create - Fields
+			// ------------------------
+			{
+				displayName: 'Title',
+				name: 'title',
+				type: 'string',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: ['vendor'],
+						operation: ['create'],
+					},
+				},
+				default: '',
+				description: 'The title of the vendor',
+			},
+			{
+				displayName: 'Manager ID',
+				name: 'managerId',
+				type: 'string',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: ['vendor'],
+						operation: ['create'],
+					},
+				},
+				default: '',
+				description: 'The ID of the user who manages the vendor relationship',
+			},
+			{
+				displayName: 'Owner ID',
+				name: 'ownerId',
+				type: 'string',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: ['vendor'],
+						operation: ['create'],
+					},
+				},
+				default: '',
+				description: 'The ID of the user who owns the vendor',
+			},
+			{
+				displayName: 'State',
+				name: 'state',
+				type: 'options',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: ['vendor'],
+						operation: ['create'],
+					},
+				},
+				options: [
+					{
+						name: 'Onboarding',
+						value: 'onboarding',
+					},
+					{
+						name: 'Active',
+						value: 'active',
+					},
+					{
+						name: 'Offboarding',
+						value: 'offboarding',
+					},
+					{
+						name: 'Deprecated',
+						value: 'deprecated',
+					},
+				],
+				default: 'active',
+				description: 'The state of the vendor',
+			},
+			{
+				displayName: 'Additional Fields',
+				name: 'additionalFields',
+				type: 'collection',
+				placeholder: 'Add Field',
+				default: {},
+				displayOptions: {
+					show: {
+						resource: ['vendor'],
+						operation: ['create'],
+					},
+				},
+				options: [
+					{
+						displayName: 'Criticality',
+						name: 'criticality',
+						type: 'options',
+						options: [
+							{
+								name: 'Low',
+								value: 'low',
+							},
+							{
+								name: 'Medium',
+								value: 'medium',
+							},
+							{
+								name: 'High',
+								value: 'high',
+							},
+						],
+						default: 'low',
+						description: 'The criticality of the vendor',
+					},
+					{
+						displayName: 'Description',
+						name: 'description',
+						type: 'string',
+						default: '',
+						description: 'Detailed description of the vendor (HTML supported)',
+					},
+					{
+						displayName: 'Contact',
+						name: 'contact',
+						type: 'string',
+						default: '',
+						description: 'Contact person or details',
+					},
+					{
+						displayName: 'Country',
+						name: 'country',
+						type: 'string',
+						default: '',
+						description: 'Country of the vendor',
+					},
+					{
+						displayName: 'Website',
+						name: 'website',
+						type: 'string',
+						default: '',
+						description: 'Website URL',
+					},
+					{
+						displayName: 'Contract Start Date',
+						name: 'contractStartDate',
+						type: 'dateTime',
+						default: '',
+						description: 'Start date of the contract',
+					},
+					{
+						displayName: 'Contract End Date',
+						name: 'contractEndDate',
+						type: 'dateTime',
+						default: '',
+						description: 'End date of the contract',
+					},
+					{
+						displayName: 'Personal Data Classification',
+						name: 'personalDataClassification',
+						type: 'options',
+						options: [
+							{
+								name: 'No Personal Data',
+								value: 'no_personal',
+							},
+							{
+								name: 'Personal Data',
+								value: 'personal',
+							},
+							{
+								name: 'Special Categories',
+								value: 'special_categories',
+							},
+							{
+								name: 'Financial Data',
+								value: 'financial',
+							},
+						],
+						default: 'no_personal',
+						description: 'Classification of personal data handled by the vendor',
+					},
+					{
+						displayName: 'Labels',
+						name: 'labels',
+						type: 'string',
+						default: '',
+						placeholder: 'e.g., 81bb6227-005f-4b1e-bf11-fbb9b96adb4d',
+						description: 'Comma-separated list of label IDs to attach to the vendor',
+						typeOptions: {
+							multipleValues: true,
+						},
+					},
+				],
 			},
 
 			// ------------------------
@@ -1265,8 +1830,198 @@ export class Kordon implements INodeType {
 							},
 						},
 					},
+					{
+						name: 'Create',
+						value: 'create',
+						description: 'Create a new task',
+						action: 'Create a task',
+						routing: {
+							request: {
+								method: 'POST',
+								url: '/tasks',
+								body: {
+									title: '={{$parameter.title}}',
+									assignee_id: '={{$parameter.assigneeId}}',
+									kind: '={{$parameter.kind}}',
+									frequency: '={{$parameter.frequency}}',
+									due_at: '={{$parameter.dueAt}}',
+									description: '={{$parameter.additionalFields.description}}',
+									needs_evidence: '={{$parameter.additionalFields.needsEvidence}}',
+									duration: '={{$parameter.additionalFields.duration}}',
+									labels: '={{$parameter.additionalFields.labels}}',
+								},
+							},
+							output: {
+								postReceive: [
+									{
+										type: 'rootProperty',
+										properties: {
+											property: 'data',
+										},
+									},
+								],
+							},
+						},
+					},
 				],
 				default: 'getMany',
+			},
+
+			// ------------------------
+			// Task: Create - Fields
+			// ------------------------
+			{
+				displayName: 'Title',
+				name: 'title',
+				type: 'string',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: ['task'],
+						operation: ['create'],
+					},
+				},
+				default: '',
+				description: 'The title of the task',
+			},
+			{
+				displayName: 'Assignee ID',
+				name: 'assigneeId',
+				type: 'string',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: ['task'],
+						operation: ['create'],
+					},
+				},
+				default: '',
+				description: 'The ID of the user assigned to the task',
+			},
+			{
+				displayName: 'Kind',
+				name: 'kind',
+				type: 'options',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: ['task'],
+						operation: ['create'],
+					},
+				},
+				options: [
+					{
+						name: 'Audit',
+						value: 'audit',
+					},
+					{
+						name: 'Maintenance',
+						value: 'maintenance',
+					},
+					{
+						name: 'Review',
+						value: 'review',
+					},
+				],
+				default: 'maintenance',
+				description: 'The kind of task',
+			},
+			{
+				displayName: 'Frequency',
+				name: 'frequency',
+				type: 'options',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: ['task'],
+						operation: ['create'],
+					},
+				},
+				options: [
+					{
+						name: 'Once',
+						value: 'once',
+					},
+					{
+						name: 'Weekly',
+						value: 'weekly',
+					},
+					{
+						name: 'Monthly',
+						value: 'monthly',
+					},
+					{
+						name: 'Quarterly',
+						value: 'quarterly',
+					},
+					{
+						name: 'Semi-Annual',
+						value: 'semi-annual',
+					},
+					{
+						name: 'Annual',
+						value: 'annual',
+					},
+				],
+				default: 'once',
+				description: 'How often the task should repeat',
+			},
+			{
+				displayName: 'Due At',
+				name: 'dueAt',
+				type: 'dateTime',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: ['task'],
+						operation: ['create'],
+					},
+				},
+				default: '',
+				description: 'When the task is due',
+			},
+			{
+				displayName: 'Additional Fields',
+				name: 'additionalFields',
+				type: 'collection',
+				placeholder: 'Add Field',
+				default: {},
+				displayOptions: {
+					show: {
+						resource: ['task'],
+						operation: ['create'],
+					},
+				},
+				options: [
+					{
+						displayName: 'Description',
+						name: 'description',
+						type: 'string',
+						default: '',
+						description: 'Detailed description of the task',
+					},
+					{
+						displayName: 'Needs Evidence',
+						name: 'needsEvidence',
+						type: 'boolean',
+						default: false,
+						description: 'Whether the task requires evidence to be completed',
+					},
+					{
+						displayName: 'Duration',
+						name: 'duration',
+						type: 'number',
+						default: 0,
+						description: 'Estimated duration in minutes',
+					},
+					{
+						displayName: 'Labels',
+						name: 'labels',
+						type: 'string',
+						default: '',
+						description: 'Comma-separated list of label IDs',
+					},
+				],
 			},
 
 			// ------------------------
@@ -1860,8 +2615,136 @@ export class Kordon implements INodeType {
 							},
 						},
 					},
+					{
+						name: 'Create',
+						value: 'create',
+						description: 'Create a new risk',
+						action: 'Create a risk',
+						routing: {
+							request: {
+								method: 'POST',
+								url: '/risks',
+								body: {
+									title: '={{$parameter.title}}',
+									manager_id: '={{$parameter.managerId}}',
+									owner_id: '={{$parameter.ownerId}}',
+									impact: '={{$parameter.additionalFields.impact}}',
+									probability: '={{$parameter.additionalFields.probability}}',
+									description: '={{$parameter.additionalFields.description}}',
+									label_ids: '={{$parameter.additionalFields.labels}}',
+								},
+							},
+							output: {
+								postReceive: [
+									{
+										type: 'rootProperty',
+										properties: {
+											property: 'data',
+										},
+									},
+								],
+							},
+						},
+					},
 				],
 				default: 'getMany',
+			},
+
+			// ------------------------
+			// Risk: Create - Fields
+			// ------------------------
+			{
+				displayName: 'Title',
+				name: 'title',
+				type: 'string',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: ['risk'],
+						operation: ['create'],
+					},
+				},
+				default: '',
+				description: 'The title of the risk',
+			},
+			{
+				displayName: 'Manager ID',
+				name: 'managerId',
+				type: 'string',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: ['risk'],
+						operation: ['create'],
+					},
+				},
+				default: '',
+				description: 'The ID of the user managing the risk',
+			},
+			{
+				displayName: 'Owner ID',
+				name: 'ownerId',
+				type: 'string',
+				required: true,
+				displayOptions: {
+					show: {
+						resource: ['risk'],
+						operation: ['create'],
+					},
+				},
+				default: '',
+				description: 'The ID of the user owning the risk',
+			},
+			{
+				displayName: 'Additional Fields',
+				name: 'additionalFields',
+				type: 'collection',
+				placeholder: 'Add Field',
+				default: {},
+				displayOptions: {
+					show: {
+						resource: ['risk'],
+						operation: ['create'],
+					},
+				},
+				options: [
+					{
+						displayName: 'Impact',
+						name: 'impact',
+						type: 'number',
+						typeOptions: {
+							minValue: 1,
+							maxValue: 5,
+						},
+						default: 1,
+						description: 'Risk impact (1-5)',
+					},
+					{
+						displayName: 'Probability',
+						name: 'probability',
+						type: 'number',
+						typeOptions: {
+							minValue: 1,
+							maxValue: 5,
+						},
+						default: 1,
+						description: 'Risk probability (1-5)',
+					},
+					{
+						displayName: 'Description',
+						name: 'description',
+						type: 'string',
+						default: '',
+						description: 'Detailed description of the risk',
+					},
+					{
+						displayName: 'Labels',
+						name: 'labels',
+						type: 'string',
+						default: '',
+						description: 'Comma-separated list of label IDs',
+					},
+				],
 			},
 
 			// ------------------------

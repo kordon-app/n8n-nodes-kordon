@@ -1,7 +1,7 @@
 # TODO
 
 ## Completed ✅
-- [x] Add pagination support to Users Get Many operation
+- [x] Implement generic pagination support for all resources (handling string-based page numbers)
 - [x] Add Frameworks (Regulations) resource with Get and Get Many operations
 - [x] Add Requirements resource with Get Many operation and filters (framework, applicability, chapter, controls, labels)
 - [x] Add Controls resource with Get Many operation and filters (kind, state, owner, labels)

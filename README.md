@@ -1,6 +1,6 @@
 # n8n-nodes-kordon
 
-This is an n8n community node. It lets you use GitHub Issues in your n8n workflows.
+This is an n8n community node for the Kordon GRC platform. It allows you to interact with Kordon resources like Assets, Risks, Controls, and more directly from your n8n workflows.
 
 [n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/sustainable-use-license/) workflow automation platform.
 
@@ -164,57 +164,56 @@ After modifying the node code:
 
 ## Operations
 
-- Issues
-    - Get an issue
-    - Get many issues in a repository
-    - Create a new issue
-- Issue Comments
-    - Get many issue comments
+The node supports the following resources and operations:
+
+- **Assets**
+    - Get: Retrieve a single asset by ID
+    - Get Many: Retrieve a list of assets with filtering (state, value, health, owner, etc.)
+- **Business Processes**
+    - Get: Retrieve a single business process by ID
+    - Get Many: Retrieve a list of business processes with filtering
+- **Controls**
+    - Get: Retrieve a single control by ID
+    - Get Many: Retrieve a list of controls with filtering (kind, state, owner, labels)
+- **Findings**
+    - Get: Retrieve a single finding by ID
+    - Get Many: Retrieve a list of findings with filtering (kind, state, priority, source)
+- **Frameworks (Regulations)**
+    - Get: Retrieve a single framework by ID
+    - Get Many: Retrieve a list of frameworks
+- **Requirements**
+    - Get: Retrieve a single requirement by ID
+    - Get Many: Retrieve a list of requirements with filtering (framework, applicability, chapter)
+- **Risks**
+    - Get: Retrieve a single risk by ID
+    - Get Many: Retrieve a list of risks with filtering (state, owner, impact, probability)
+- **Tasks**
+    - Get: Retrieve a single task by ID
+    - Get Many: Retrieve a list of tasks with filtering (kind, state, assignee)
+- **Users**
+    - Get: Retrieve a single user by ID
+    - Get Many: Retrieve a list of users
+- **Vendors**
+    - Get: Retrieve a single vendor by ID
+    - Get Many: Retrieve a list of vendors with filtering (state, criticality, owner)
+
+All "Get Many" operations support:
+- **Return All**: Automatically fetches all results using pagination
+- **Limit**: Restrict the number of results returned
 
 ## Credentials
 
-You can use either access token or OAuth2 to use this node.
+You need to configure Kordon API credentials to use this node.
 
-### Access token
-
-1. Open your GitHub profile [Settings](https://github.com/settings/profile).
-2. In the left navigation, select [Developer settings](https://github.com/settings/apps).
-3. In the left navigation, under Personal access tokens, select Tokens (classic).
-4. Select Generate new token > Generate new token (classic).
-5. Enter a descriptive name for your token in the Note field, like n8n integration.
-6. Select the Expiration you'd like for the token, or select No expiration.
-7. Select Scopes for your token. For most of the n8n GitHub nodes, add the `repo` scope.
-    - A token without assigned scopes can only access public information.
-8. Select Generate token.
-9. Copy the token.
-
-Refer to [Creating a personal access token (classic)](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic) for more information. Refer to Scopes for OAuth apps for more information on GitHub scopes.
-
-![Generated Access token in GitHub](https://docs.github.com/assets/cb-17251/mw-1440/images/help/settings/personal-access-tokens.webp)
-
-### OAuth2
-
-If you're self-hosting n8n, create a new GitHub [OAuth app](https://docs.github.com/en/apps/oauth-apps):
-
-1. Open your GitHub profile [Settings](https://github.com/settings/profile).
-2. In the left navigation, select [Developer settings](https://github.com/settings/apps).
-3. In the left navigation, select OAuth apps.
-4. Select New OAuth App.
-    - If you haven't created an app before, you may see Register a new application instead. Select it.
-5. Enter an Application name, like n8n integration.
-6. Enter the Homepage URL for your app's website.
-7. If you'd like, add the optional Application description, which GitHub displays to end-users.
-8. From n8n, copy the OAuth Redirect URL and paste it into the GitHub Authorization callback URL.
-9. Select Register application.
-10. Copy the Client ID and Client Secret this generates and add them to your n8n credential.
-
-Refer to the [GitHub Authorizing OAuth apps documentation](https://docs.github.com/en/apps/oauth-apps/using-oauth-apps/authorizing-oauth-apps) for more information on the authorization process.
+1. Create a new credential of type "Kordon API"
+2. Enter your Kordon API URL (e.g., `https://api.kordon.app`)
+3. Enter your API Token
 
 ## Compatibility
 
-Compatible with n8n@1.60.0 or later
+Compatible with n8n@1.0.0 or later
 
 ## Resources
 
 * [n8n community nodes documentation](https://docs.n8n.io/integrations/#community-nodes)
-* [GitHub API docs](https://docs.github.com/en/rest/issues)
+* [Kordon Website](https://kordon.app)

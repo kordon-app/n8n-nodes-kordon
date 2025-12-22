@@ -678,26 +678,9 @@ export class Kordon implements INodeType {
 					operation: ['getMany'],
 				},
 			},
-			default: false,
-			description: 'Whether to return all results or only up to a given limit',
+			default: true,
+			description: 'Whether to return all results or use pagination',
 			routing: paginationRouting,
-		},
-		{
-			displayName: 'Limit',
-			name: 'limit',
-			type: 'number',
-			displayOptions: {
-				show: {
-					resource: ['asset'],
-					operation: ['getMany'],
-					returnAll: [false],
-				},
-			},
-			typeOptions: {
-				minValue: 1,
-			},
-			default: 50,
-			description: 'Max number of results to return',
 		},
 		{
 			displayName: 'Options',
@@ -1291,26 +1274,9 @@ export class Kordon implements INodeType {
 					operation: ['getMany'],
 				},
 			},
-			default: false,
-			description: 'Whether to return all results or only up to a given limit',
+			default: true,
+			description: 'Whether to return all results or use pagination',
 			routing: paginationRouting,
-		},
-		{
-			displayName: 'Limit',
-			name: 'limit',
-			type: 'number',
-			displayOptions: {
-				show: {
-					resource: ['business_process'],
-					operation: ['getMany'],
-					returnAll: [false],
-				},
-			},
-			typeOptions: {
-				minValue: 1,
-			},
-			default: 50,
-			description: 'Max number of results to return',
 		},
 		{
 			displayName: 'Options',
@@ -1613,26 +1579,9 @@ export class Kordon implements INodeType {
 						operation: ['getMany'],
 					},
 				},
-				default: false,
-				description: 'Whether to return all results or only up to a given limit',
+				default: true,
+				description: 'Whether to return all results or use pagination',
 				routing: paginationRouting,
-			},
-			{
-				displayName: 'Limit',
-				name: 'limit',
-				type: 'number',
-				displayOptions: {
-					show: {
-						resource: ['control'],
-						operation: ['getMany'],
-						returnAll: [false],
-					},
-				},
-				typeOptions: {
-					minValue: 1,
-				},
-				default: 50,
-				description: 'Max number of results to return',
 			},
 			{
 				displayName: 'Options',
@@ -2541,26 +2490,9 @@ export class Kordon implements INodeType {
 						operation: ['getMany'],
 					},
 				},
-				default: false,
-				description: 'Whether to return all results or only up to a given limit',
+				default: true,
+				description: 'Whether to return all results or use pagination',
 				routing: paginationRouting,
-			},
-			{
-				displayName: 'Limit',
-				name: 'limit',
-				type: 'number',
-				displayOptions: {
-					show: {
-						resource: ['vendor'],
-						operation: ['getMany'],
-						returnAll: [false],
-					},
-				},
-				typeOptions: {
-					minValue: 1,
-				},
-				default: 50,
-				description: 'Max number of results to return',
 			},
 			{
 				displayName: 'Options',
@@ -2964,26 +2896,9 @@ export class Kordon implements INodeType {
 						operation: ['getMany'],
 					},
 				},
-				default: false,
-				description: 'Whether to return all results or only up to a given limit',
+				default: true,
+				description: 'Whether to return all results or use pagination',
 				routing: paginationRouting,
-			},
-			{
-				displayName: 'Limit',
-				name: 'limit',
-				type: 'number',
-				displayOptions: {
-					show: {
-						resource: ['user'],
-						operation: ['getMany'],
-						returnAll: [false],
-					},
-				},
-				typeOptions: {
-					minValue: 1,
-				},
-				default: 50,
-				description: 'Max number of results to return',
 			},
 
 			// ------------------------
@@ -3114,26 +3029,9 @@ export class Kordon implements INodeType {
 						operation: ['getMany'],
 					},
 				},
-				default: false,
-				description: 'Whether to return all results or only up to a given limit',
+				default: true,
+				description: 'Whether to return all results or use pagination',
 				routing: paginationRouting,
-			},
-			{
-				displayName: 'Limit',
-				name: 'limit',
-				type: 'number',
-				displayOptions: {
-					show: {
-						resource: ['user_group'],
-						operation: ['getMany'],
-						returnAll: [false],
-					},
-				},
-				typeOptions: {
-					minValue: 1,
-				},
-				default: 50,
-				description: 'Max number of results to return',
 			},
 
 			// ------------------------
@@ -3642,26 +3540,9 @@ export class Kordon implements INodeType {
 						operation: ['getMany'],
 					},
 				},
-				default: false,
-				description: 'Whether to return all results or only up to a given limit',
+				default: true,
+				description: 'Whether to return all results or use pagination',
 				routing: paginationRouting,
-			},
-			{
-				displayName: 'Limit',
-				name: 'limit',
-				type: 'number',
-				displayOptions: {
-					show: {
-						resource: ['task'],
-						operation: ['getMany'],
-						returnAll: [false],
-					},
-				},
-				typeOptions: {
-					minValue: 1,
-				},
-				default: 50,
-				description: 'Max number of results to return',
 			},
 			{
 				displayName: 'Options',
@@ -4366,26 +4247,9 @@ export class Kordon implements INodeType {
 					operation: ['getMany'],
 				},
 			},
-			default: false,
-			description: 'Whether to return all results or only up to a given limit',
+			default: true,
+			description: 'Whether to return all results or use pagination',
 			routing: paginationRouting,
-		},
-		{
-			displayName: 'Limit',
-			name: 'limit',
-			type: 'number',
-			displayOptions: {
-				show: {
-					resource: ['finding'],
-					operation: ['getMany'],
-					returnAll: [false],
-				},
-			},
-			typeOptions: {
-				minValue: 1,
-			},
-			default: 50,
-			description: 'Max number of results to return',
 		},
 		{
 			displayName: 'Options',
@@ -4732,26 +4596,9 @@ export class Kordon implements INodeType {
 						operation: ['getMany'],
 					},
 				},
-				default: false,
-				description: 'Whether to return all results or only up to a given limit',
+				default: true,
+				description: 'Whether to return all results or use pagination',
 				routing: paginationRouting,
-			},
-			{
-				displayName: 'Limit',
-				name: 'limit',
-				type: 'number',
-				displayOptions: {
-					show: {
-						resource: ['regulation'],
-						operation: ['getMany'],
-						returnAll: [false],
-					},
-				},
-				typeOptions: {
-					minValue: 1,
-				},
-				default: 50,
-				description: 'Max number of results to return',
 			},
 
 			// ------------------------
@@ -5201,26 +5048,9 @@ export class Kordon implements INodeType {
 						operation: ['getMany'],
 					},
 				},
-				default: false,
-				description: 'Whether to return all results or only up to a given limit',
+				default: true,
+				description: 'Whether to return all results or use pagination',
 				routing: paginationRouting,
-			},
-			{
-				displayName: 'Limit',
-				name: 'limit',
-				type: 'number',
-				displayOptions: {
-					show: {
-						resource: ['risk'],
-						operation: ['getMany'],
-						returnAll: [false],
-					},
-				},
-				typeOptions: {
-					minValue: 1,
-				},
-				default: 50,
-				description: 'Max number of results to return',
 			},
 			{
 				displayName: 'Options',
@@ -5770,26 +5600,9 @@ export class Kordon implements INodeType {
 						operation: ['getMany'],
 					},
 				},
-				default: false,
-				description: 'Whether to return all results or only up to a given limit',
+				default: true,
+				description: 'Whether to return all results or use pagination',
 				routing: paginationRouting,
-			},
-			{
-				displayName: 'Limit',
-				name: 'limit',
-				type: 'number',
-				displayOptions: {
-					show: {
-						resource: ['requirement'],
-						operation: ['getMany'],
-						returnAll: [false],
-					},
-				},
-				typeOptions: {
-					minValue: 1,
-				},
-				default: 50,
-				description: 'Max number of results to return',
 			}, {
 				displayName: 'Options',
 				name: 'options',

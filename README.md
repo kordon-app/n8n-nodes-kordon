@@ -164,41 +164,25 @@ After modifying the node code:
 
 ## Operations
 
-The node supports the following resources and operations:
+The node supports full CRUD operations for 12 Kordon resources:
 
-- **Assets**
-    - Get: Retrieve a single asset by ID
-    - Get Many: Retrieve a list of assets with filtering (state, value, health, owner, etc.)
-- **Business Processes**
-    - Get: Retrieve a single business process by ID
-    - Get Many: Retrieve a list of business processes with filtering
-- **Controls**
-    - Get: Retrieve a single control by ID
-    - Get Many: Retrieve a list of controls with filtering (kind, state, owner, labels)
-- **Findings**
-    - Get: Retrieve a single finding by ID
-    - Get Many: Retrieve a list of findings with filtering (kind, state, priority, source)
-- **Frameworks (Regulations)**
-    - Get: Retrieve a single framework by ID
-    - Get Many: Retrieve a list of frameworks
-- **Requirements**
-    - Get: Retrieve a single requirement by ID
-    - Get Many: Retrieve a list of requirements with filtering (framework, applicability, chapter)
-- **Risks**
-    - Get: Retrieve a single risk by ID
-    - Get Many: Retrieve a list of risks with filtering (state, owner, impact, probability)
-- **Tasks**
-    - Get: Retrieve a single task by ID
-    - Get Many: Retrieve a list of tasks with filtering (kind, state, assignee)
-- **Users**
-    - Get: Retrieve a single user by ID
-    - Get Many: Retrieve a list of users
-- **Vendors**
-    - Get: Retrieve a single vendor by ID
-    - Get Many: Retrieve a list of vendors with filtering (state, criticality, owner)
+| Resource | Get | Get Many | Create | Update | Delete |
+|----------|-----|----------|--------|--------|--------|
+| Assets | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Business Processes | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Controls | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Findings | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Frameworks | ✅ | ✅ | - | - | - |
+| Requirements | ✅ | ✅ | - | - | - |
+| Risks | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Tasks | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Users | ✅ | ✅ | - | ✅ | - |
+| User Groups | ✅ | ✅ | - | - | - |
+| Vendors | ✅ | ✅ | ✅ | ✅ | ✅ |
 
 All "Get Many" operations support:
 - **Return All**: Automatically fetches all results using pagination
+- **Filtering**: Resource-specific filters (state, owner, labels, etc.)
 - **Limit**: Restrict the number of results returned
 
 ## Credentials
@@ -208,6 +192,29 @@ You need to configure Kordon API credentials to use this node.
 1. Create a new credential of type "Kordon API"
 2. Enter your Kordon API URL (e.g., `https://api.kordon.app`)
 3. Enter your API Token
+
+## Project Structure
+
+The codebase is organized into modular files for maintainability:
+
+```
+nodes/Kordon/
+├── Kordon.node.ts           # Main node definition (~150 lines)
+├── descriptions/            # Resource-specific operations and fields
+│   ├── AssetDescription.ts
+│   ├── BusinessProcessDescription.ts
+│   ├── ControlDescription.ts
+│   ├── FindingDescription.ts
+│   ├── FrameworkDescription.ts
+│   ├── RequirementDescription.ts
+│   ├── RiskDescription.ts
+│   ├── TaskDescription.ts
+│   ├── UserDescription.ts
+│   ├── UserGroupDescription.ts
+│   └── VendorDescription.ts
+└── shared/
+    └── utils.ts             # Shared utilities (pagination, array handling)
+```
 
 ## Compatibility
 

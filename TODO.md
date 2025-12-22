@@ -1,6 +1,9 @@
 # TODO
+- [x] add the Update User Action
 - [ ] double check that setting a limit when querying many elements at once is respected
 - [ ] implement result sorting in get many actions for all requests 
+- [x] instead of having a single string field that requires the user to input values in a comma separated list. Use the same ui for filtering by multiple values in get many like we have for creating lables for all objects
+
 
 ## Completed ✅
 - [x] Implement generic pagination support for all resources (handling string-based page numbers)

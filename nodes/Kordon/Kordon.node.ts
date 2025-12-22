@@ -8,68 +8,7 @@ import { requirementDeleteOperation } from './descriptions/RequirementDescriptio
 import { riskDeleteOperation } from './descriptions/RiskDescription';
 import { taskDeleteOperation } from './descriptions/TaskDescription';
 import { vendorDeleteOperation } from './descriptions/VendorDescription';
-
-// Reusable pagination routing config for all Get Many operations
-const paginationRouting = {
-	send: {
-		paginate: '={{ $value }}',
-		type: 'query' as const,
-		property: 'per_page',
-		value: '={{ 100 }}',
-	},
-	operations: {
-		pagination: {
-			type: 'generic' as const,
-			properties: {
-				continue: '={{ $response.body.data && $response.body.data.length > 0 && (Number($response.body.meta.page) * Number($response.body.meta.per_page)) < $response.body.meta.total_count }}',
-				request: {
-					qs: {
-						page: '={{ Number($response.body.meta.page || 1) + 1 }}',
-						per_page: '={{ 100 }}',
-					},
-				},
-			},
-		},
-	},
-};
-
-// Helper function to handle array parameters in query strings
-function handleArrayParameter(
-	requestOptions: any,
-	paramName: string,
-	options?: { encodeValues?: boolean },
-): void {
-	const paramKey = `${paramName}[]`;
-	if (!requestOptions.qs || !requestOptions.qs[paramKey]) {
-		return;
-	}
-
-	const paramValue = requestOptions.qs[paramKey];
-	delete requestOptions.qs[paramKey];
-
-	let values: string[] = [];
-
-	// Handle array values (e.g., from multiOptions)
-	if (Array.isArray(paramValue) && paramValue.length > 0) {
-		values = paramValue.map((v) => String(v));
-	}
-	// Handle comma-separated string values
-	else if (paramValue && String(paramValue).trim()) {
-		values = String(paramValue)
-			.split(',')
-			.map((id) => id.trim())
-			.filter((id) => id);
-	}
-
-	// Append to URL if we have values
-	if (values.length > 0) {
-		const encodedValues = options?.encodeValues
-			? values.map((v) => encodeURIComponent(v))
-			: values;
-		const params = encodedValues.map((v) => `${paramKey}=${v}`).join('&');
-		requestOptions.url = requestOptions.url + (requestOptions.url.includes('?') ? '&' : '?') + params;
-	}
-}
+import { paginationRouting, handleArrayParameter } from './shared/utils';
 
 export class Kordon implements INodeType {
 	description: INodeTypeDescription = {

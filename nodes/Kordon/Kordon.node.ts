@@ -9,6 +9,7 @@ import { riskDeleteOperation } from './descriptions/RiskDescription';
 import { taskDeleteOperation } from './descriptions/TaskDescription';
 import { vendorDeleteOperation } from './descriptions/VendorDescription';
 import { userOperations, userFields } from './descriptions/UserDescription';
+import { userGroupOperations, userGroupFields } from './descriptions/UserGroupDescription';
 import { paginationRouting, handleArrayParameter } from './shared/utils';
 
 export class Kordon implements INodeType {
@@ -2554,138 +2555,9 @@ export class Kordon implements INodeType {
 			userOperations,
 			...userFields,
 
-			// ------------------------
-			// User Group - Operation
-			// ------------------------
-			{
-				displayName: 'Operation',
-				name: 'operation',
-				type: 'options',
-				noDataExpression: true,
-				displayOptions: {
-					show: {
-						resource: ['user_group'],
-					},
-				},
-				options: [
-					{
-						name: 'Create',
-						value: 'create',
-						description: 'Create a new user group',
-						action: 'Create a user group',
-						routing: {
-							request: {
-								method: 'POST',
-								url: '/settings/user-groups',
-								body: {
-									user_group: {
-										name: '={{$parameter.name}}',
-										description: '={{$parameter.description}}',
-										color: '={{$parameter.color}}',
-										include_me: false,
-									},
-								},
-							},
-							output: {
-								postReceive: [
-									{
-										type: 'rootProperty',
-										properties: {
-											property: 'data',
-										},
-									},
-								],
-							},
-						},
-					},
-					{
-						name: 'Get Many',
-						value: 'getMany',
-						description: 'Get a list of user groups',
-						action: 'Get many user groups',
-						routing: {
-							request: {
-								method: 'GET',
-								url: '/settings/user-groups',
-								returnFullResponse: true,
-							},
-							output: {
-								postReceive: [
-									{
-										type: 'rootProperty',
-										properties: {
-											property: 'data',
-										},
-									},
-								],
-							},
-						},
-					},
-				],
-				default: 'create',
-			},
-
-			// ------------------------
-			// User Group: Create - Fields
-			// ------------------------
-			{
-				displayName: 'Name',
-				name: 'name',
-				type: 'string',
-				required: true,
-				displayOptions: {
-					show: {
-						resource: ['user_group'],
-						operation: ['create'],
-					},
-				},
-				default: '',
-				description: 'Name of the user group',
-			},
-			{
-				displayName: 'Description',
-				name: 'description',
-				type: 'string',
-				displayOptions: {
-					show: {
-						resource: ['user_group'],
-						operation: ['create'],
-					},
-				},
-				default: '',
-				description: 'Description of the user group',
-			},
-			{
-				displayName: 'Color',
-				name: 'color',
-				type: 'color',
-				displayOptions: {
-					show: {
-						resource: ['user_group'],
-						operation: ['create'],
-					},
-				},
-				default: '#5CDBD3',
-				description: 'Color of the user group',
-			},
-
-			// ------------------------
-			// User Group: Get Many - Options
-			// ------------------------
-			{
-				displayName: 'Return All',
-				name: 'returnAll',
-				type: 'boolean',
-				displayOptions: {
-					show: {
-						resource: ['user_group'],
-						operation: ['getMany'],
-					},
-				},
-				default: true,
-				description: 'Whether to return all results or use pagination',
-				routing: paginationRouting,
-			},
+			// User Group operations and fields
+			userGroupOperations,
+			...userGroupFields,
 
 			// ------------------------
 			// Task - Operation

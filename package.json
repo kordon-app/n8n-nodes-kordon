@@ -1,6 +1,6 @@
 {
     "name": "n8n-nodes-kordon",
-    "version": "1.0.0",
+    "version": "1.0.1-0",
     "description": "n8n community node for Kordon - the security compliance and GRC platform. Manage users, frameworks, controls, requirements, risks, findings, tasks, vendors, business processes, and assets.",
     "license": "MIT",
     "homepage": "https://kordon.app",

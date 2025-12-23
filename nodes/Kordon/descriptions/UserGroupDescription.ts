@@ -132,7 +132,7 @@ export const userGroupFields: INodeProperties[] = [
 			},
 		},
 		default: true,
-		description: 'Whether to return all results or use pagination',
+		description: 'Whether to return all results or only up to a given limit',
 		routing: paginationRouting,
 	},
 ];

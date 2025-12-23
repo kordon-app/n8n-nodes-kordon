@@ -152,7 +152,7 @@ export const businessProcessOperations: INodeProperties = {
 
 							for (const key of Object.keys(updateFields)) {
 								if (key === 'labels') {
-									let labels = updateFields[key];
+									const labels = updateFields[key];
 									if (typeof labels === 'string') {
 										businessProcess['label_ids'] = labels.split(',').map((id: string) => id.trim());
 									} else if (Array.isArray(labels)) {
@@ -251,7 +251,7 @@ export const businessProcessFields: INodeProperties[] = [
 			},
 		},
 		default: true,
-		description: 'Whether to return all results or use pagination',
+		description: 'Whether to return all results or only up to a given limit',
 		routing: paginationRouting,
 	},
 	{
@@ -308,7 +308,7 @@ export const businessProcessFields: INodeProperties[] = [
 				},
 				default: [],
 				placeholder: 'Add label ID or "none"',
-				description: 'Filter by label IDs. Use "none" for items without labels',
+				description: 'Filter by label IDs. Use "none" for items without labels.',
 			},
 		],
 	},

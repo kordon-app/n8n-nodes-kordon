@@ -151,6 +151,7 @@ export const userFields: INodeProperties[] = [
 		displayName: 'Email',
 		name: 'email',
 		type: 'string',
+		placeholder: 'name@email.com',
 		required: true,
 		displayOptions: {
 			show: {
@@ -248,6 +249,7 @@ export const userFields: INodeProperties[] = [
 				displayName: 'Email',
 				name: 'email',
 				type: 'string',
+				placeholder: 'name@email.com',
 				default: '',
 				description: 'The email of the user',
 			},
@@ -319,7 +321,7 @@ export const userFields: INodeProperties[] = [
 			},
 		},
 		default: true,
-		description: 'Whether to return all results or use pagination',
+		description: 'Whether to return all results or only up to a given limit',
 		routing: paginationRouting,
 	},
 ];

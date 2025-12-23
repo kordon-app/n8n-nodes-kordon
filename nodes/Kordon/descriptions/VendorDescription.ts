@@ -176,7 +176,7 @@ export const vendorOperations: INodeProperties = {
 
 							for (const key of Object.keys(updateFields)) {
 								if (key === 'labels') {
-									let labels = updateFields[key];
+									const labels = updateFields[key];
 									if (typeof labels === 'string') {
 										vendor['label_ids'] = labels.split(',').map((id: string) => id.trim());
 									} else if (Array.isArray(labels)) {
@@ -283,7 +283,7 @@ export const vendorFields: INodeProperties[] = [
 			},
 		},
 		default: true,
-		description: 'Whether to return all results or use pagination',
+		description: 'Whether to return all results or only up to a given limit',
 		routing: paginationRouting,
 	},
 	{
@@ -376,7 +376,7 @@ export const vendorFields: INodeProperties[] = [
 				},
 				default: [],
 				placeholder: 'Add label ID or "none"',
-				description: 'Filter by label IDs. Use "none" for items without labels',
+				description: 'Filter by label IDs. Use "none" for items without labels.',
 			},
 		],
 	},

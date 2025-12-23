@@ -3,6 +3,7 @@ import type { ICredentialType, INodeProperties } from 'n8n-workflow';
 export class KordonApi implements ICredentialType {
 	name = 'kordonApi';
 	displayName = 'Kordon API';
+	documentationUrl = 'kordon';
 
 	properties: INodeProperties[] = [
 		{

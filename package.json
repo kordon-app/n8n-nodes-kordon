@@ -1,15 +1,15 @@
 {
     "name": "n8n-nodes-kordon",
     "version": "0.1.0",
-    "description": "",
+    "description": "n8n community node for Kordon - the security compliance and GRC platform. Manage users, frameworks, controls, requirements, risks, findings, tasks, vendors, business processes, and assets.",
     "license": "MIT",
-    "homepage": "",
+    "homepage": "https://kordon.app",
     "keywords": [
         "n8n-community-node-package"
     ],
     "author": {
         "name": "Jaana Metsamaa",
-        "email": ""
+        "email": "hi@kordon.app"
     },
     "repository": {
         "type": "git",

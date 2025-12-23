@@ -5,29 +5,6 @@ import { paginationRouting, handleArrayParameter } from '../shared/utils';
  * Finding resource operations for Kordon node
  */
 
-export const findingDeleteOperation = {
-	name: 'Delete',
-	value: 'delete',
-	description: 'Delete a finding',
-	action: 'Delete a finding',
-	routing: {
-		request: {
-			method: 'DELETE' as const,
-			url: '=/findings/{{$parameter.findingId}}',
-		},
-		output: {
-			postReceive: [
-				{
-					type: 'rootProperty' as const,
-					properties: {
-						property: 'data',
-					},
-				},
-			],
-		},
-	},
-};
-
 export const findingOperations: INodeProperties = {
 	displayName: 'Operation',
 	name: 'operation',
@@ -188,7 +165,7 @@ export const findingOperations: INodeProperties = {
 
 							for (const key of Object.keys(updateFields)) {
 								if (key === 'labels') {
-									let labels = updateFields[key];
+									const labels = updateFields[key];
 									if (typeof labels === 'string') {
 										finding['label_ids'] = labels.split(',').map((id: string) => id.trim());
 									} else if (Array.isArray(labels)) {
@@ -231,7 +208,28 @@ export const findingOperations: INodeProperties = {
 				},
 			},
 		},
-		findingDeleteOperation,
+		{
+			name: 'Delete',
+			value: 'delete',
+			description: 'Delete a finding',
+			action: 'Delete a finding',
+			routing: {
+				request: {
+					method: 'DELETE',
+					url: '=/findings/{{$parameter.findingId}}',
+				},
+				output: {
+					postReceive: [
+						{
+							type: 'rootProperty',
+							properties: {
+								property: 'data',
+							},
+						},
+					],
+				},
+			},
+		},
 	],
 	default: 'getMany',
 };
@@ -663,7 +661,7 @@ export const findingFields: INodeProperties[] = [
 			},
 		},
 		default: true,
-		description: 'Whether to return all results or use pagination',
+		description: 'Whether to return all results or only up to a given limit',
 		routing: paginationRouting,
 	},
 	{

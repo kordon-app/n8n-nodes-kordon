@@ -5,29 +5,6 @@ import { paginationRouting, handleArrayParameter } from '../shared/utils';
  * Risk resource operations for Kordon node
  */
 
-export const riskDeleteOperation = {
-	name: 'Delete',
-	value: 'delete',
-	description: 'Delete a risk',
-	action: 'Delete a risk',
-	routing: {
-		request: {
-			method: 'DELETE' as const,
-			url: '=/risks/{{$parameter.riskId}}',
-		},
-		output: {
-			postReceive: [
-				{
-					type: 'rootProperty' as const,
-					properties: {
-						property: 'data',
-					},
-				},
-			],
-		},
-	},
-};
-
 export const riskOperations: INodeProperties = {
 	displayName: 'Operation',
 	name: 'operation',
@@ -185,7 +162,7 @@ export const riskOperations: INodeProperties = {
 							// Map UI fields to API fields
 							for (const key of Object.keys(updateFields)) {
 								if (key === 'labels') {
-									let labels = updateFields[key];
+									const labels = updateFields[key];
 									if (typeof labels === 'string') {
 										risk['label_ids'] = labels.split(',').map((id: string) => id.trim());
 									} else if (Array.isArray(labels)) {
@@ -241,7 +218,28 @@ export const riskOperations: INodeProperties = {
 				},
 			},
 		},
-		riskDeleteOperation,
+		{
+			name: 'Delete',
+			value: 'delete',
+			description: 'Delete a risk',
+			action: 'Delete a risk',
+			routing: {
+				request: {
+					method: 'DELETE',
+					url: '=/risks/{{$parameter.riskId}}',
+				},
+				output: {
+					postReceive: [
+						{
+							type: 'rootProperty',
+							properties: {
+								property: 'data',
+							},
+						},
+					],
+				},
+			},
+		},
 	],
 	default: 'getMany',
 };
@@ -475,7 +473,7 @@ export const riskFields: INodeProperties[] = [
 			},
 		},
 		default: true,
-		description: 'Whether to return all results or use pagination',
+		description: 'Whether to return all results or only up to a given limit',
 		routing: paginationRouting,
 	},
 	{
@@ -539,7 +537,7 @@ export const riskFields: INodeProperties[] = [
 				},
 				default: [],
 				placeholder: 'Add label ID or "none"',
-				description: 'Filter by label IDs. Use "none" for items without labels',
+				description: 'Filter by label IDs. Use "none" for items without labels.',
 			},
 			{
 				displayName: 'Impact',

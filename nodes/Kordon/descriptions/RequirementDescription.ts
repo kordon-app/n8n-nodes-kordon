@@ -5,29 +5,6 @@ import { paginationRouting, handleArrayParameter } from '../shared/utils';
  * Requirement resource operations for Kordon node
  */
 
-export const requirementDeleteOperation = {
-	name: 'Delete',
-	value: 'delete',
-	description: 'Delete a requirement',
-	action: 'Delete a requirement',
-	routing: {
-		request: {
-			method: 'DELETE' as const,
-			url: '=/requirements/{{$parameter.requirementId}}',
-		},
-		output: {
-			postReceive: [
-				{
-					type: 'rootProperty' as const,
-					properties: {
-						property: 'data',
-					},
-				},
-			],
-		},
-	},
-};
-
 export const requirementOperations: INodeProperties = {
 	displayName: 'Operation',
 	name: 'operation',
@@ -187,7 +164,7 @@ export const requirementOperations: INodeProperties = {
 
 							for (const key of Object.keys(updateFields)) {
 								if (key === 'labels') {
-									let labels = updateFields[key];
+									const labels = updateFields[key];
 									if (typeof labels === 'string') {
 										requirement['label_ids'] = labels.split(',').map((id: string) => id.trim());
 									} else if (Array.isArray(labels)) {
@@ -197,7 +174,7 @@ export const requirementOperations: INodeProperties = {
 									}
 								} else if (key === 'frameworkId') {
 									// Convert frameworkId to regulation_ids array
-									let frameworkId = updateFields[key];
+									const frameworkId = updateFields[key];
 									if (typeof frameworkId === 'string') {
 										requirement['regulation_ids'] = [frameworkId];
 									} else if (Array.isArray(frameworkId)) {
@@ -242,7 +219,28 @@ export const requirementOperations: INodeProperties = {
 				},
 			},
 		},
-		requirementDeleteOperation,
+		{
+			name: 'Delete',
+			value: 'delete',
+			description: 'Delete a requirement',
+			action: 'Delete a requirement',
+			routing: {
+				request: {
+					method: 'DELETE',
+					url: '=/requirements/{{$parameter.requirementId}}',
+				},
+				output: {
+					postReceive: [
+						{
+							type: 'rootProperty',
+							properties: {
+								property: 'data',
+							},
+						},
+					],
+				},
+			},
+		},
 	],
 	default: 'getMany',
 };
@@ -502,7 +500,7 @@ export const requirementFields: INodeProperties[] = [
 			},
 		},
 		default: true,
-		description: 'Whether to return all results or use pagination',
+		description: 'Whether to return all results or only up to a given limit',
 		routing: paginationRouting,
 	},
 	{
@@ -580,7 +578,7 @@ export const requirementFields: INodeProperties[] = [
 				},
 				default: [],
 				placeholder: 'Add label ID or "none"',
-				description: 'Filter by label IDs. Use "none" for items without labels',
+				description: 'Filter by label IDs. Use "none" for items without labels.',
 			},
 		],
 	},

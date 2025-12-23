@@ -5,29 +5,6 @@ import { paginationRouting, handleArrayParameter } from '../shared/utils';
  * Task resource operations for Kordon node
  */
 
-export const taskDeleteOperation = {
-	name: 'Delete',
-	value: 'delete',
-	description: 'Delete a task',
-	action: 'Delete a task',
-	routing: {
-		request: {
-			method: 'DELETE' as const,
-			url: '=/tasks/{{$parameter.taskId}}',
-		},
-		output: {
-			postReceive: [
-				{
-					type: 'rootProperty' as const,
-					properties: {
-						property: 'data',
-					},
-				},
-			],
-		},
-	},
-};
-
 export const taskOperations: INodeProperties = {
 	displayName: 'Operation',
 	name: 'operation',
@@ -154,7 +131,7 @@ export const taskOperations: INodeProperties = {
 
 							for (const key of Object.keys(updateFields)) {
 								if (key === 'labels') {
-									let labels = updateFields[key];
+									const labels = updateFields[key];
 									if (typeof labels === 'string') {
 										task['label_ids'] = labels.split(',').map((id: string) => id.trim());
 									} else if (Array.isArray(labels)) {
@@ -197,7 +174,28 @@ export const taskOperations: INodeProperties = {
 				},
 			},
 		},
-		taskDeleteOperation,
+		{
+			name: 'Delete',
+			value: 'delete',
+			description: 'Delete a task',
+			action: 'Delete a task',
+			routing: {
+				request: {
+					method: 'DELETE',
+					url: '=/tasks/{{$parameter.taskId}}',
+				},
+				output: {
+					postReceive: [
+						{
+							type: 'rootProperty',
+							properties: {
+								property: 'data',
+							},
+						},
+					],
+				},
+			},
+		},
 	],
 	default: 'getMany',
 };
@@ -533,7 +531,7 @@ export const taskFields: INodeProperties[] = [
 			},
 		},
 		default: true,
-		description: 'Whether to return all results or use pagination',
+		description: 'Whether to return all results or only up to a given limit',
 		routing: paginationRouting,
 	},
 	{

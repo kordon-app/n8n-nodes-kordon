@@ -18,6 +18,7 @@ export class Kordon implements INodeType {
 		icon: { light: 'file:../../icons/kordon.svg', dark: 'file:../../icons/kordon.svg' },
 		group: ['input'],
 		version: 1,
+		subtitle: '={{ $parameter["operation"] + ": " + $parameter["resource"] }}',
 		description: 'Interact with the Kordon API',
 		defaults: {
 			name: 'Kordon',
@@ -143,5 +144,6 @@ export class Kordon implements INodeType {
 			requirementOperations,
 			...requirementFields,
 		],
+		usableAsTool: true,
 	};
 }

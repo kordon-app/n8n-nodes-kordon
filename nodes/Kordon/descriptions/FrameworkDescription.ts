@@ -5,29 +5,6 @@ import { paginationRouting } from '../shared/utils';
  * Framework resource operations for Kordon node
  */
 
-export const frameworkDeleteOperation = {
-	name: 'Delete',
-	value: 'delete',
-	description: 'Delete a framework',
-	action: 'Delete a framework',
-	routing: {
-		request: {
-			method: 'DELETE' as const,
-			url: '=/regulations/{{$parameter.frameworkId}}',
-		},
-		output: {
-			postReceive: [
-				{
-					type: 'rootProperty' as const,
-					properties: {
-						property: 'data',
-					},
-				},
-			],
-		},
-	},
-};
-
 export const frameworkOperations: INodeProperties = {
 	displayName: 'Operation',
 	name: 'operation',
@@ -151,7 +128,28 @@ export const frameworkOperations: INodeProperties = {
 				},
 			},
 		},
-		frameworkDeleteOperation,
+		{
+			name: 'Delete',
+			value: 'delete',
+			description: 'Delete a framework',
+			action: 'Delete a framework',
+			routing: {
+				request: {
+					method: 'DELETE',
+					url: '=/regulations/{{$parameter.frameworkId}}',
+				},
+				output: {
+					postReceive: [
+						{
+							type: 'rootProperty',
+							properties: {
+								property: 'data',
+							},
+						},
+					],
+				},
+			},
+		},
 	],
 	default: 'getMany',
 };
@@ -249,7 +247,7 @@ export const frameworkFields: INodeProperties[] = [
 			},
 		},
 		default: true,
-		description: 'Whether to return all results or use pagination',
+		description: 'Whether to return all results or only up to a given limit',
 		routing: paginationRouting,
 	},
 ];

@@ -91,6 +91,7 @@ export const controlOperations: INodeProperties = {
 				send: {
 					preSend: [
 						async function (this, requestOptions) {
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
 							const body = requestOptions.body as any;
 							
 							// Handle label_ids if present
@@ -148,7 +149,9 @@ export const controlOperations: INodeProperties = {
 				send: {
 					preSend: [
 						async function (this, requestOptions) {
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
 							const updateFields = this.getNodeParameter('updateFields', {}) as { [key: string]: any };
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
 							const control: { [key: string]: any } = {};
 
 							// Map UI fields to API fields
@@ -491,18 +494,18 @@ export const controlFields: INodeProperties[] = [
 		},
 		options: [
 			{
-				displayName: 'Title',
-				name: 'title',
-				type: 'string',
+				displayName: 'Begins At',
+				name: 'beginsAt',
+				type: 'dateTime',
 				default: '',
-				description: 'The title of the control',
+				description: 'Date when the control begins',
 			},
 			{
-				displayName: 'Owner ID',
-				name: 'ownerId',
+				displayName: 'Description',
+				name: 'description',
 				type: 'string',
 				default: '',
-				description: 'The ID of the user who owns the control',
+				description: 'Detailed description of the control (HTML supported)',
 			},
 			{
 				displayName: 'Kind',
@@ -526,20 +529,6 @@ export const controlFields: INodeProperties[] = [
 				description: 'The type of control',
 			},
 			{
-				displayName: 'Begins At',
-				name: 'beginsAt',
-				type: 'dateTime',
-				default: '',
-				description: 'Date when the control begins',
-			},
-			{
-				displayName: 'Description',
-				name: 'description',
-				type: 'string',
-				default: '',
-				description: 'Detailed description of the control (HTML supported)',
-			},
-			{
 				displayName: 'Labels',
 				name: 'labels',
 				type: 'string',
@@ -549,6 +538,20 @@ export const controlFields: INodeProperties[] = [
 				typeOptions: {
 					multipleValues: true,
 				},
+			},
+			{
+				displayName: 'Owner ID',
+				name: 'ownerId',
+				type: 'string',
+				default: '',
+				description: 'The ID of the user who owns the control',
+			},
+			{
+				displayName: 'Title',
+				name: 'title',
+				type: 'string',
+				default: '',
+				description: 'The title of the control',
 			},
 		],
 	},

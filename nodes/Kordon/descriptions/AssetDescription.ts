@@ -83,6 +83,7 @@ export const assetOperations: INodeProperties = {
 							this.logger.info('Status Code: ' + response.statusCode);
 							this.logger.info('Response Body Type: ' + typeof response.body);
 							
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
 							const body = response.body as any;
 							if (body) {
 								this.logger.info('Has data property: ' + (!!body.data));
@@ -116,6 +117,7 @@ export const assetOperations: INodeProperties = {
 					preSend: [
 						async function (this, requestOptions) {
 							// Handle array parameters for label_ids
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
 							const body = requestOptions.body as any;
 							if (body && body.asset && body.asset.label_ids) {
 								if (typeof body.asset.label_ids === 'string') {
@@ -164,7 +166,9 @@ export const assetOperations: INodeProperties = {
 				send: {
 					preSend: [
 						async function (this, requestOptions) {
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
 							const updateFields = this.getNodeParameter('updateFields', 0) as { [key: string]: any };
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
 							const asset: { [key: string]: any } = {};
 
 							// Map UI fields to API fields
@@ -305,27 +309,6 @@ export const assetFields: INodeProperties[] = [
 		},
 		options: [
 			{
-				displayName: 'State',
-				name: 'state',
-				type: 'multiOptions',
-				options: [
-					{
-						name: 'Live',
-						value: 'live',
-					},
-					{
-						name: 'Planned',
-						value: 'planned',
-					},
-					{
-						name: 'Deprecated',
-						value: 'deprecated',
-					},
-				],
-				default: [],
-				description: 'Filter assets by state',
-			},
-			{
 				displayName: 'Asset Value',
 				name: 'asset_value',
 				type: 'multiOptions',
@@ -368,15 +351,15 @@ export const assetFields: INodeProperties[] = [
 				description: 'Filter assets by health status',
 			},
 			{
-				displayName: 'Owner ID(s)',
-				name: 'owner',
+				displayName: 'Labels',
+				name: 'labels',
 				type: 'string',
 				typeOptions: {
 					multipleValues: true,
 				},
 				default: [],
-				placeholder: 'Add owner ID',
-				description: 'Filter by owner IDs',
+				placeholder: 'Add label ID or "none"',
+				description: 'Filter by label IDs. Use "none" for items without labels.',
 			},
 			{
 				displayName: 'Manager ID(s)',
@@ -390,15 +373,36 @@ export const assetFields: INodeProperties[] = [
 				description: 'Filter by manager IDs',
 			},
 			{
-				displayName: 'Labels',
-				name: 'labels',
+				displayName: 'Owner ID(s)',
+				name: 'owner',
 				type: 'string',
 				typeOptions: {
 					multipleValues: true,
 				},
 				default: [],
-				placeholder: 'Add label ID or "none"',
-				description: 'Filter by label IDs. Use "none" for items without labels.',
+				placeholder: 'Add owner ID',
+				description: 'Filter by owner IDs',
+			},
+			{
+				displayName: 'State',
+				name: 'state',
+				type: 'multiOptions',
+				options: [
+					{
+						name: 'Live',
+						value: 'live',
+					},
+					{
+						name: 'Planned',
+						value: 'planned',
+					},
+					{
+						name: 'Deprecated',
+						value: 'deprecated',
+					},
+				],
+				default: [],
+				description: 'Filter assets by state',
 			},
 		],
 	},
@@ -569,34 +573,6 @@ export const assetFields: INodeProperties[] = [
 		},
 		options: [
 			{
-				displayName: 'Title',
-				name: 'title',
-				type: 'string',
-				default: '',
-				description: 'The title of the asset',
-			},
-			{
-				displayName: 'Manager ID',
-				name: 'managerId',
-				type: 'string',
-				default: '',
-				description: 'The ID of the user who manages the asset',
-			},
-			{
-				displayName: 'Owner ID',
-				name: 'ownerId',
-				type: 'string',
-				default: '',
-				description: 'The ID of the user who owns the asset',
-			},
-			{
-				displayName: 'Description',
-				name: 'description',
-				type: 'string',
-				default: '',
-				description: 'Detailed description of the asset (HTML supported)',
-			},
-			{
 				displayName: 'Asset Value',
 				name: 'assetValue',
 				type: 'options',
@@ -616,6 +592,38 @@ export const assetFields: INodeProperties[] = [
 				],
 				default: 'low',
 				description: 'The value of the asset',
+			},
+			{
+				displayName: 'Description',
+				name: 'description',
+				type: 'string',
+				default: '',
+				description: 'Detailed description of the asset (HTML supported)',
+			},
+			{
+				displayName: 'Labels',
+				name: 'labels',
+				type: 'string',
+				default: '',
+				placeholder: 'e.g., 81bb6227-005f-4b1e-bf11-fbb9b96adb4d',
+				description: 'Comma-separated list of label IDs to attach to the asset',
+				typeOptions: {
+					multipleValues: true,
+				},
+			},
+			{
+				displayName: 'Manager ID',
+				name: 'managerId',
+				type: 'string',
+				default: '',
+				description: 'The ID of the user who manages the asset',
+			},
+			{
+				displayName: 'Owner ID',
+				name: 'ownerId',
+				type: 'string',
+				default: '',
+				description: 'The ID of the user who owns the asset',
 			},
 			{
 				displayName: 'State',
@@ -639,15 +647,11 @@ export const assetFields: INodeProperties[] = [
 				description: 'The state of the asset',
 			},
 			{
-				displayName: 'Labels',
-				name: 'labels',
+				displayName: 'Title',
+				name: 'title',
 				type: 'string',
 				default: '',
-				placeholder: 'e.g., 81bb6227-005f-4b1e-bf11-fbb9b96adb4d',
-				description: 'Comma-separated list of label IDs to attach to the asset',
-				typeOptions: {
-					multipleValues: true,
-				},
+				description: 'The title of the asset',
 			},
 		],
 	},

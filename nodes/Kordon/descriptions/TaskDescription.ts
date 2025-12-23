@@ -126,7 +126,9 @@ export const taskOperations: INodeProperties = {
 				send: {
 					preSend: [
 						async function (this, requestOptions) {
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
 							const updateFields = this.getNodeParameter('updateFields', {}) as { [key: string]: any };
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
 							const task: { [key: string]: any } = {};
 
 							for (const key of Object.keys(updateFields)) {
@@ -273,16 +275,16 @@ export const taskFields: INodeProperties[] = [
 		},
 		options: [
 			{
-				name: 'Once',
-				value: 'once',
-			},
-			{
-				name: 'Weekly',
-				value: 'weekly',
+				name: 'Annual',
+				value: 'annual',
 			},
 			{
 				name: 'Monthly',
 				value: 'monthly',
+			},
+			{
+				name: 'Once',
+				value: 'once',
 			},
 			{
 				name: 'Quarterly',
@@ -293,8 +295,8 @@ export const taskFields: INodeProperties[] = [
 				value: 'semi-annual',
 			},
 			{
-				name: 'Annual',
-				value: 'annual',
+				name: 'Weekly',
+				value: 'weekly',
 			},
 		],
 		default: 'once',
@@ -390,18 +392,65 @@ export const taskFields: INodeProperties[] = [
 		},
 		options: [
 			{
-				displayName: 'Title',
-				name: 'title',
-				type: 'string',
-				default: '',
-				description: 'The title of the task',
-			},
-			{
 				displayName: 'Assignee ID',
 				name: 'assigneeId',
 				type: 'string',
 				default: '',
 				description: 'The ID of the user assigned to the task',
+			},
+			{
+				displayName: 'Description',
+				name: 'description',
+				type: 'string',
+				default: '',
+				description: 'Detailed description of the task',
+			},
+			{
+				displayName: 'Due At',
+				name: 'dueAt',
+				type: 'dateTime',
+				default: '',
+				description: 'When the task is due',
+			},
+			{
+				displayName: 'Duration',
+				name: 'duration',
+				type: 'number',
+				default: 0,
+				description: 'Estimated duration in minutes',
+			},
+			{
+				displayName: 'Frequency',
+				name: 'frequency',
+				type: 'options',
+				options: [
+					{
+						name: 'Annual',
+						value: 'annual',
+					},
+					{
+						name: 'Monthly',
+						value: 'monthly',
+					},
+					{
+						name: 'Once',
+						value: 'once',
+					},
+					{
+						name: 'Quarterly',
+						value: 'quarterly',
+					},
+					{
+						name: 'Semi-Annual',
+						value: 'semi-annual',
+					},
+					{
+						name: 'Weekly',
+						value: 'weekly',
+					},
+				],
+				default: 'once',
+				description: 'How often the task should repeat',
 			},
 			{
 				displayName: 'Kind',
@@ -425,51 +474,14 @@ export const taskFields: INodeProperties[] = [
 				description: 'The kind of task',
 			},
 			{
-				displayName: 'Frequency',
-				name: 'frequency',
-				type: 'options',
-				options: [
-					{
-						name: 'Once',
-						value: 'once',
-					},
-					{
-						name: 'Weekly',
-						value: 'weekly',
-					},
-					{
-						name: 'Monthly',
-						value: 'monthly',
-					},
-					{
-						name: 'Quarterly',
-						value: 'quarterly',
-					},
-					{
-						name: 'Semi-Annual',
-						value: 'semi-annual',
-					},
-					{
-						name: 'Annual',
-						value: 'annual',
-					},
-				],
-				default: 'once',
-				description: 'How often the task should repeat',
-			},
-			{
-				displayName: 'Due At',
-				name: 'dueAt',
-				type: 'dateTime',
-				default: '',
-				description: 'When the task is due',
-			},
-			{
-				displayName: 'Description',
-				name: 'description',
+				displayName: 'Labels',
+				name: 'labels',
 				type: 'string',
 				default: '',
-				description: 'Detailed description of the task',
+				description: 'Comma-separated list of label IDs',
+				typeOptions: {
+					multipleValues: true,
+				},
 			},
 			{
 				displayName: 'Needs Evidence',
@@ -479,21 +491,11 @@ export const taskFields: INodeProperties[] = [
 				description: 'Whether the task requires evidence to be completed',
 			},
 			{
-				displayName: 'Duration',
-				name: 'duration',
-				type: 'number',
-				default: 0,
-				description: 'Estimated duration in minutes',
-			},
-			{
-				displayName: 'Labels',
-				name: 'labels',
+				displayName: 'Title',
+				name: 'title',
 				type: 'string',
 				default: '',
-				description: 'Comma-separated list of label IDs',
-				typeOptions: {
-					multipleValues: true,
-				},
+				description: 'The title of the task',
 			},
 		],
 	},

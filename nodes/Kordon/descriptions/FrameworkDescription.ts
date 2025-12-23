@@ -97,7 +97,9 @@ export const frameworkOperations: INodeProperties = {
 				send: {
 					preSend: [
 						async function (this, requestOptions) {
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
 							const updateFields = this.getNodeParameter('updateFields', {}) as { [key: string]: any };
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
 							const regulation: { [key: string]: any } = {};
 
 							for (const key of Object.keys(updateFields)) {

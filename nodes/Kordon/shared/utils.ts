@@ -1,3 +1,5 @@
+import type { IHttpRequestOptions } from 'n8n-workflow';
+
 /**
  * Shared utilities for Kordon n8n node
  */
@@ -35,17 +37,18 @@ export const paginationRouting = {
  * into proper URL query parameters with [] notation
  */
 export function handleArrayParameter(
-	requestOptions: any,
+	requestOptions: IHttpRequestOptions,
 	paramName: string,
 	options?: { encodeValues?: boolean },
 ): void {
 	const paramKey = `${paramName}[]`;
-	if (!requestOptions.qs || !requestOptions.qs[paramKey]) {
+	const qs = requestOptions.qs as Record<string, unknown> | undefined;
+	if (!qs || !qs[paramKey]) {
 		return;
 	}
 
-	const paramValue = requestOptions.qs[paramKey];
-	delete requestOptions.qs[paramKey];
+	const paramValue = qs[paramKey];
+	delete qs[paramKey];
 
 	let values: string[] = [];
 

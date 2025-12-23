@@ -79,6 +79,7 @@ export const vendorOperations: INodeProperties = {
 							this.logger.info('=== Kordon Vendor API Response ===');
 							this.logger.info('Status Code: ' + response.statusCode);
 							
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
 							const body = response.body as any;
 							if (body) {
 								this.logger.info('Data length: ' + (body.data ? body.data.length : 'N/A'));
@@ -109,6 +110,7 @@ export const vendorOperations: INodeProperties = {
 					preSend: [
 						async function (this, requestOptions) {
 							// Handle array parameters for label_ids
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
 							const body = requestOptions.body as any;
 							if (body && body.vendor && body.vendor.label_ids) {
 								if (typeof body.vendor.label_ids === 'string') {
@@ -171,7 +173,9 @@ export const vendorOperations: INodeProperties = {
 				send: {
 					preSend: [
 						async function (this, requestOptions) {
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
 							const updateFields = this.getNodeParameter('updateFields', {}) as { [key: string]: any };
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
 							const vendor: { [key: string]: any } = {};
 
 							for (const key of Object.keys(updateFields)) {
@@ -300,6 +304,60 @@ export const vendorFields: INodeProperties[] = [
 		},
 		options: [
 			{
+				displayName: 'Criticality',
+				name: 'criticality',
+				type: 'multiOptions',
+				options: [
+					{
+						name: 'High',
+						value: 'high',
+					},
+					{
+						name: 'Medium',
+						value: 'medium',
+					},
+					{
+						name: 'Low',
+						value: 'low',
+					},
+				],
+				default: [],
+				description: 'Filter vendors by criticality level',
+			},
+			{
+				displayName: 'Labels',
+				name: 'labels',
+				type: 'string',
+				typeOptions: {
+					multipleValues: true,
+				},
+				default: [],
+				placeholder: 'Add label ID or "none"',
+				description: 'Filter by label IDs. Use "none" for items without labels.',
+			},
+			{
+				displayName: 'Manager ID(s)',
+				name: 'manager',
+				type: 'string',
+				typeOptions: {
+					multipleValues: true,
+				},
+				default: [],
+				placeholder: 'Add manager ID',
+				description: 'Filter by manager IDs',
+			},
+			{
+				displayName: 'Owner ID(s)',
+				name: 'owner',
+				type: 'string',
+				typeOptions: {
+					multipleValues: true,
+				},
+				default: [],
+				placeholder: 'Add owner ID',
+				description: 'Filter by owner IDs',
+			},
+			{
 				displayName: 'State',
 				name: 'state',
 				type: 'multiOptions',
@@ -323,60 +381,6 @@ export const vendorFields: INodeProperties[] = [
 				],
 				default: [],
 				description: 'Filter vendors by state',
-			},
-			{
-				displayName: 'Criticality',
-				name: 'criticality',
-				type: 'multiOptions',
-				options: [
-					{
-						name: 'High',
-						value: 'high',
-					},
-					{
-						name: 'Medium',
-						value: 'medium',
-					},
-					{
-						name: 'Low',
-						value: 'low',
-					},
-				],
-				default: [],
-				description: 'Filter vendors by criticality level',
-			},
-			{
-				displayName: 'Owner ID(s)',
-				name: 'owner',
-				type: 'string',
-				typeOptions: {
-					multipleValues: true,
-				},
-				default: [],
-				placeholder: 'Add owner ID',
-				description: 'Filter by owner IDs',
-			},
-			{
-				displayName: 'Manager ID(s)',
-				name: 'manager',
-				type: 'string',
-				typeOptions: {
-					multipleValues: true,
-				},
-				default: [],
-				placeholder: 'Add manager ID',
-				description: 'Filter by manager IDs',
-			},
-			{
-				displayName: 'Labels',
-				name: 'labels',
-				type: 'string',
-				typeOptions: {
-					multipleValues: true,
-				},
-				default: [],
-				placeholder: 'Add label ID or "none"',
-				description: 'Filter by label IDs. Use "none" for items without labels.',
 			},
 		],
 	},
@@ -472,6 +476,34 @@ export const vendorFields: INodeProperties[] = [
 		},
 		options: [
 			{
+				displayName: 'Contact',
+				name: 'contact',
+				type: 'string',
+				default: '',
+				description: 'Contact person or details',
+			},
+			{
+				displayName: 'Contract End Date',
+				name: 'contractEndDate',
+				type: 'dateTime',
+				default: '',
+				description: 'End date of the contract',
+			},
+			{
+				displayName: 'Contract Start Date',
+				name: 'contractStartDate',
+				type: 'dateTime',
+				default: '',
+				description: 'Start date of the contract',
+			},
+			{
+				displayName: 'Country',
+				name: 'country',
+				type: 'string',
+				default: '',
+				description: 'Country of the vendor',
+			},
+			{
 				displayName: 'Criticality',
 				name: 'criticality',
 				type: 'options',
@@ -500,39 +532,15 @@ export const vendorFields: INodeProperties[] = [
 				description: 'Detailed description of the vendor (HTML supported)',
 			},
 			{
-				displayName: 'Contact',
-				name: 'contact',
+				displayName: 'Labels',
+				name: 'labels',
 				type: 'string',
 				default: '',
-				description: 'Contact person or details',
-			},
-			{
-				displayName: 'Country',
-				name: 'country',
-				type: 'string',
-				default: '',
-				description: 'Country of the vendor',
-			},
-			{
-				displayName: 'Website',
-				name: 'website',
-				type: 'string',
-				default: '',
-				description: 'Website URL',
-			},
-			{
-				displayName: 'Contract Start Date',
-				name: 'contractStartDate',
-				type: 'dateTime',
-				default: '',
-				description: 'Start date of the contract',
-			},
-			{
-				displayName: 'Contract End Date',
-				name: 'contractEndDate',
-				type: 'dateTime',
-				default: '',
-				description: 'End date of the contract',
+				placeholder: 'e.g., 81bb6227-005f-4b1e-bf11-fbb9b96adb4d',
+				description: 'Comma-separated list of label IDs to attach to the vendor',
+				typeOptions: {
+					multipleValues: true,
+				},
 			},
 			{
 				displayName: 'Personal Data Classification',
@@ -560,15 +568,11 @@ export const vendorFields: INodeProperties[] = [
 				description: 'Classification of personal data handled by the vendor',
 			},
 			{
-				displayName: 'Labels',
-				name: 'labels',
+				displayName: 'Website',
+				name: 'website',
 				type: 'string',
 				default: '',
-				placeholder: 'e.g., 81bb6227-005f-4b1e-bf11-fbb9b96adb4d',
-				description: 'Comma-separated list of label IDs to attach to the vendor',
-				typeOptions: {
-					multipleValues: true,
-				},
+				description: 'Website URL',
 			},
 		],
 	},
@@ -605,50 +609,32 @@ export const vendorFields: INodeProperties[] = [
 		},
 		options: [
 			{
-				displayName: 'Title',
-				name: 'title',
+				displayName: 'Contact',
+				name: 'contact',
 				type: 'string',
 				default: '',
-				description: 'The title of the vendor',
+				description: 'Contact person or details',
 			},
 			{
-				displayName: 'Manager ID',
-				name: 'managerId',
+				displayName: 'Contract End Date',
+				name: 'contractEndDate',
+				type: 'dateTime',
+				default: '',
+				description: 'End date of the contract',
+			},
+			{
+				displayName: 'Contract Start Date',
+				name: 'contractStartDate',
+				type: 'dateTime',
+				default: '',
+				description: 'Start date of the contract',
+			},
+			{
+				displayName: 'Country',
+				name: 'country',
 				type: 'string',
 				default: '',
-				description: 'The ID of the user who manages the vendor relationship',
-			},
-			{
-				displayName: 'Owner ID',
-				name: 'ownerId',
-				type: 'string',
-				default: '',
-				description: 'The ID of the user who owns the vendor',
-			},
-			{
-				displayName: 'State',
-				name: 'state',
-				type: 'options',
-				options: [
-					{
-						name: 'Onboarding',
-						value: 'onboarding',
-					},
-					{
-						name: 'Active',
-						value: 'active',
-					},
-					{
-						name: 'Offboarding',
-						value: 'offboarding',
-					},
-					{
-						name: 'Deprecated',
-						value: 'deprecated',
-					},
-				],
-				default: 'active',
-				description: 'The state of the vendor',
+				description: 'Country of the vendor',
 			},
 			{
 				displayName: 'Criticality',
@@ -679,39 +665,29 @@ export const vendorFields: INodeProperties[] = [
 				description: 'Detailed description of the vendor (HTML supported)',
 			},
 			{
-				displayName: 'Contact',
-				name: 'contact',
+				displayName: 'Labels',
+				name: 'labels',
 				type: 'string',
 				default: '',
-				description: 'Contact person or details',
+				placeholder: 'e.g., 81bb6227-005f-4b1e-bf11-fbb9b96adb4d',
+				description: 'Comma-separated list of label IDs to attach to the vendor',
+				typeOptions: {
+					multipleValues: true,
+				},
 			},
 			{
-				displayName: 'Country',
-				name: 'country',
+				displayName: 'Manager ID',
+				name: 'managerId',
 				type: 'string',
 				default: '',
-				description: 'Country of the vendor',
+				description: 'The ID of the user who manages the vendor relationship',
 			},
 			{
-				displayName: 'Website',
-				name: 'website',
+				displayName: 'Owner ID',
+				name: 'ownerId',
 				type: 'string',
 				default: '',
-				description: 'Website URL',
-			},
-			{
-				displayName: 'Contract Start Date',
-				name: 'contractStartDate',
-				type: 'dateTime',
-				default: '',
-				description: 'Start date of the contract',
-			},
-			{
-				displayName: 'Contract End Date',
-				name: 'contractEndDate',
-				type: 'dateTime',
-				default: '',
-				description: 'End date of the contract',
+				description: 'The ID of the user who owns the vendor',
 			},
 			{
 				displayName: 'Personal Data Classification',
@@ -739,15 +715,43 @@ export const vendorFields: INodeProperties[] = [
 				description: 'Classification of personal data handled by the vendor',
 			},
 			{
-				displayName: 'Labels',
-				name: 'labels',
+				displayName: 'State',
+				name: 'state',
+				type: 'options',
+				options: [
+					{
+						name: 'Onboarding',
+						value: 'onboarding',
+					},
+					{
+						name: 'Active',
+						value: 'active',
+					},
+					{
+						name: 'Offboarding',
+						value: 'offboarding',
+					},
+					{
+						name: 'Deprecated',
+						value: 'deprecated',
+					},
+				],
+				default: 'active',
+				description: 'The state of the vendor',
+			},
+			{
+				displayName: 'Title',
+				name: 'title',
 				type: 'string',
 				default: '',
-				placeholder: 'e.g., 81bb6227-005f-4b1e-bf11-fbb9b96adb4d',
-				description: 'Comma-separated list of label IDs to attach to the vendor',
-				typeOptions: {
-					multipleValues: true,
-				},
+				description: 'The title of the vendor',
+			},
+			{
+				displayName: 'Website',
+				name: 'website',
+				type: 'string',
+				default: '',
+				description: 'Website URL',
 			},
 		],
 	},

@@ -1,9 +1,10 @@
-import type { ICredentialType, INodeProperties } from 'n8n-workflow';
+import type { ICredentialType, INodeProperties, ICredentialTestRequest } from 'n8n-workflow';
 
 export class KordonApi implements ICredentialType {
 	name = 'kordonApi';
 	displayName = 'Kordon API';
-	documentationUrl = 'kordon';
+	documentationUrl = 'https://kordon.app/learn/api/authentication/';
+	icon = { light: 'file:kordon.svg', dark: 'file:kordon-dark.svg' } as const;
 
 	properties: INodeProperties[] = [
 		{
@@ -24,4 +25,15 @@ export class KordonApi implements ICredentialType {
 			default: '',
 		},
 	];
+
+	test: ICredentialTestRequest = {
+		request: {
+			baseURL: '={{$credentials.domain}}/api/v1',
+			url: '/users',
+			method: 'GET',
+			headers: {
+				Authorization: '=Bearer {{$credentials.apiKey}}',
+			},
+		},
+	};
 }

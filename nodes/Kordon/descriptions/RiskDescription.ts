@@ -98,6 +98,7 @@ export const riskOperations: INodeProperties = {
 				send: {
 					preSend: [
 						async function (this, requestOptions) {
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
 							const body = requestOptions.body as any;
 
 							// Handle label_ids if present
@@ -156,7 +157,9 @@ export const riskOperations: INodeProperties = {
 				send: {
 					preSend: [
 						async function (this, requestOptions) {
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
 							const updateFields = this.getNodeParameter('updateFields', {}) as { [key: string]: any };
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
 							const risk: { [key: string]: any } = {};
 
 							// Map UI fields to API fields
@@ -377,11 +380,33 @@ export const riskFields: INodeProperties[] = [
 		},
 		options: [
 			{
-				displayName: 'Title',
-				name: 'title',
+				displayName: 'Description',
+				name: 'description',
 				type: 'string',
 				default: '',
-				description: 'The title of the risk',
+				description: 'Detailed description of the risk',
+			},
+			{
+				displayName: 'Impact',
+				name: 'impact',
+				type: 'number',
+				typeOptions: {
+					minValue: 1,
+					maxValue: 5,
+				},
+				default: 1,
+				description: 'Risk impact (1-5)',
+			},
+			{
+				displayName: 'Labels',
+				name: 'labels',
+				type: 'string',
+				default: '',
+				placeholder: 'e.g., 81bb6227-005f-4b1e-bf11-fbb9b96adb4d',
+				description: 'Comma-separated list of label IDs to attach to the risk',
+				typeOptions: {
+					multipleValues: true,
+				},
 			},
 			{
 				displayName: 'Manager ID',
@@ -398,17 +423,6 @@ export const riskFields: INodeProperties[] = [
 				description: 'The ID of the user who owns the risk',
 			},
 			{
-				displayName: 'Impact',
-				name: 'impact',
-				type: 'number',
-				typeOptions: {
-					minValue: 1,
-					maxValue: 5,
-				},
-				default: 1,
-				description: 'Risk impact (1-5)',
-			},
-			{
 				displayName: 'Probability',
 				name: 'probability',
 				type: 'number',
@@ -420,22 +434,11 @@ export const riskFields: INodeProperties[] = [
 				description: 'Risk probability (1-5)',
 			},
 			{
-				displayName: 'Description',
-				name: 'description',
+				displayName: 'Title',
+				name: 'title',
 				type: 'string',
 				default: '',
-				description: 'Detailed description of the risk',
-			},
-			{
-				displayName: 'Labels',
-				name: 'labels',
-				type: 'string',
-				default: '',
-				placeholder: 'e.g., 81bb6227-005f-4b1e-bf11-fbb9b96adb4d',
-				description: 'Comma-separated list of label IDs to attach to the risk',
-				typeOptions: {
-					multipleValues: true,
-				},
+				description: 'The title of the risk',
 			},
 		],
 	},
@@ -490,6 +493,61 @@ export const riskFields: INodeProperties[] = [
 		},
 		options: [
 			{
+				displayName: 'Impact',
+				name: 'impact',
+				type: 'string',
+				typeOptions: {
+					multipleValues: true,
+				},
+				default: [],
+				placeholder: 'Add impact level (0-10)',
+				description: 'Filter by impact levels (0-10)',
+			},
+			{
+				displayName: 'Labels',
+				name: 'labels',
+				type: 'string',
+				typeOptions: {
+					multipleValues: true,
+				},
+				default: [],
+				placeholder: 'Add label ID or "none"',
+				description: 'Filter by label IDs. Use "none" for items without labels.',
+			},
+			{
+				displayName: 'Manager ID(s)',
+				name: 'manager',
+				type: 'string',
+				typeOptions: {
+					multipleValues: true,
+				},
+				default: [],
+				placeholder: 'Add manager ID',
+				description: 'Filter by manager IDs',
+			},
+			{
+				displayName: 'Owner ID(s)',
+				name: 'owner',
+				type: 'string',
+				typeOptions: {
+					multipleValues: true,
+				},
+				default: [],
+				placeholder: 'Add owner ID',
+				description: 'Filter by owner IDs',
+			},
+			{
+				displayName: 'Probability',
+				name: 'probability',
+				type: 'string',
+				typeOptions: {
+					multipleValues: true,
+				},
+				default: [],
+				placeholder: 'Add probability level (0-10)',
+				description: 'Filter by probability levels (0-10)',
+			},
+			{
 				displayName: 'State',
 				name: 'state',
 				type: 'multiOptions',
@@ -505,61 +563,6 @@ export const riskFields: INodeProperties[] = [
 				],
 				default: [],
 				description: 'Filter risks by state',
-			},
-			{
-				displayName: 'Owner ID(s)',
-				name: 'owner',
-				type: 'string',
-				typeOptions: {
-					multipleValues: true,
-				},
-				default: [],
-				placeholder: 'Add owner ID',
-				description: 'Filter by owner IDs',
-			},
-			{
-				displayName: 'Manager ID(s)',
-				name: 'manager',
-				type: 'string',
-				typeOptions: {
-					multipleValues: true,
-				},
-				default: [],
-				placeholder: 'Add manager ID',
-				description: 'Filter by manager IDs',
-			},
-			{
-				displayName: 'Labels',
-				name: 'labels',
-				type: 'string',
-				typeOptions: {
-					multipleValues: true,
-				},
-				default: [],
-				placeholder: 'Add label ID or "none"',
-				description: 'Filter by label IDs. Use "none" for items without labels.',
-			},
-			{
-				displayName: 'Impact',
-				name: 'impact',
-				type: 'string',
-				typeOptions: {
-					multipleValues: true,
-				},
-				default: [],
-				placeholder: 'Add impact level (0-10)',
-				description: 'Filter by impact levels (0-10)',
-			},
-			{
-				displayName: 'Probability',
-				name: 'probability',
-				type: 'string',
-				typeOptions: {
-					multipleValues: true,
-				},
-				default: [],
-				placeholder: 'Add probability level (0-10)',
-				description: 'Filter by probability levels (0-10)',
 			},
 		],
 	},

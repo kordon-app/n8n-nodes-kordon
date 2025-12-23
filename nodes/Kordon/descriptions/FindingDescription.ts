@@ -99,6 +99,7 @@ export const findingOperations: INodeProperties = {
 				send: {
 					preSend: [
 						async function (this, requestOptions) {
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
 							const body = requestOptions.body as any;
 
 							// Handle label_ids if present
@@ -160,7 +161,9 @@ export const findingOperations: INodeProperties = {
 				send: {
 					preSend: [
 						async function (this, requestOptions) {
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
 							const updateFields = this.getNodeParameter('updateFields', {}) as { [key: string]: any };
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
 							const finding: { [key: string]: any } = {};
 
 							for (const key of Object.keys(updateFields)) {
@@ -381,16 +384,16 @@ export const findingFields: INodeProperties[] = [
 		},
 		options: [
 			{
+				name: 'Assessment',
+				value: 'assessment',
+			},
+			{
 				name: 'Audit',
 				value: 'audit',
 			},
 			{
 				name: 'Incident',
 				value: 'incident',
-			},
-			{
-				name: 'Assessment',
-				value: 'assessment',
 			},
 			{
 				name: 'Observation',
@@ -484,11 +487,18 @@ export const findingFields: INodeProperties[] = [
 		},
 		options: [
 			{
-				displayName: 'Title',
-				name: 'title',
+				displayName: 'Date Discovered',
+				name: 'dateDiscovered',
+				type: 'dateTime',
+				default: '',
+				description: 'Date when the finding was discovered',
+			},
+			{
+				displayName: 'Description',
+				name: 'description',
 				type: 'string',
 				default: '',
-				description: 'The title of the finding',
+				description: 'Detailed description of the finding (HTML supported)',
 			},
 			{
 				displayName: 'Kind',
@@ -512,11 +522,15 @@ export const findingFields: INodeProperties[] = [
 				description: 'The kind of finding',
 			},
 			{
-				displayName: 'Owner Group ID',
-				name: 'ownerGroupId',
+				displayName: 'Labels',
+				name: 'labels',
 				type: 'string',
 				default: '',
-				description: 'The ID of the owner group',
+				placeholder: 'e.g., 81bb6227-005f-4b1e-bf11-fbb9b96adb4d',
+				description: 'Comma-separated list of label IDs to attach to the finding',
+				typeOptions: {
+					multipleValues: true,
+				},
 			},
 			{
 				displayName: 'Manager Group ID',
@@ -526,29 +540,11 @@ export const findingFields: INodeProperties[] = [
 				description: 'The ID of the manager group',
 			},
 			{
-				displayName: 'State',
-				name: 'state',
-				type: 'options',
-				options: [
-					{
-						name: 'Open',
-						value: 'open',
-					},
-					{
-						name: 'In Progress',
-						value: 'in_progress',
-					},
-					{
-						name: 'Resolved',
-						value: 'resolved',
-					},
-					{
-						name: 'Closed',
-						value: 'closed',
-					},
-				],
-				default: 'open',
-				description: 'The state of the finding',
+				displayName: 'Owner Group ID',
+				name: 'ownerGroupId',
+				type: 'string',
+				default: '',
+				description: 'The ID of the owner group',
 			},
 			{
 				displayName: 'Priority',
@@ -577,16 +573,16 @@ export const findingFields: INodeProperties[] = [
 				type: 'options',
 				options: [
 					{
+						name: 'Assessment',
+						value: 'assessment',
+					},
+					{
 						name: 'Audit',
 						value: 'audit',
 					},
 					{
 						name: 'Incident',
 						value: 'incident',
-					},
-					{
-						name: 'Assessment',
-						value: 'assessment',
 					},
 					{
 						name: 'Observation',
@@ -601,29 +597,36 @@ export const findingFields: INodeProperties[] = [
 				description: 'The source of the finding',
 			},
 			{
-				displayName: 'Date Discovered',
-				name: 'dateDiscovered',
-				type: 'dateTime',
-				default: '',
-				description: 'Date when the finding was discovered',
+				displayName: 'State',
+				name: 'state',
+				type: 'options',
+				options: [
+					{
+						name: 'Open',
+						value: 'open',
+					},
+					{
+						name: 'In Progress',
+						value: 'in_progress',
+					},
+					{
+						name: 'Resolved',
+						value: 'resolved',
+					},
+					{
+						name: 'Closed',
+						value: 'closed',
+					},
+				],
+				default: 'open',
+				description: 'The state of the finding',
 			},
 			{
-				displayName: 'Description',
-				name: 'description',
+				displayName: 'Title',
+				name: 'title',
 				type: 'string',
 				default: '',
-				description: 'Detailed description of the finding (HTML supported)',
-			},
-			{
-				displayName: 'Labels',
-				name: 'labels',
-				type: 'string',
-				default: '',
-				placeholder: 'e.g., 81bb6227-005f-4b1e-bf11-fbb9b96adb4d',
-				description: 'Comma-separated list of label IDs to attach to the finding',
-				typeOptions: {
-					multipleValues: true,
-				},
+				description: 'The title of the finding',
 			},
 		],
 	},
@@ -699,29 +702,26 @@ export const findingFields: INodeProperties[] = [
 				description: 'Filter findings by kind',
 			},
 			{
-				displayName: 'State',
-				name: 'state',
-				type: 'multiOptions',
-				options: [
-					{
-						name: 'Open',
-						value: 'open',
-					},
-					{
-						name: 'In Progress',
-						value: 'in_progress',
-					},
-					{
-						name: 'Resolved',
-						value: 'resolved',
-					},
-					{
-						name: 'Closed',
-						value: 'closed',
-					},
-				],
+				displayName: 'Manager ID(s)',
+				name: 'manager',
+				type: 'string',
+				typeOptions: {
+					multipleValues: true,
+				},
 				default: [],
-				description: 'Filter findings by state',
+				placeholder: 'Add manager ID',
+				description: 'Filter by manager IDs',
+			},
+			{
+				displayName: 'Owner ID(s)',
+				name: 'owner',
+				type: 'string',
+				typeOptions: {
+					multipleValues: true,
+				},
+				default: [],
+				placeholder: 'Add owner ID',
+				description: 'Filter by owner IDs',
 			},
 			{
 				displayName: 'Priority',
@@ -770,26 +770,29 @@ export const findingFields: INodeProperties[] = [
 				description: 'Filter findings by source',
 			},
 			{
-				displayName: 'Owner ID(s)',
-				name: 'owner',
-				type: 'string',
-				typeOptions: {
-					multipleValues: true,
-				},
+				displayName: 'State',
+				name: 'state',
+				type: 'multiOptions',
+				options: [
+					{
+						name: 'Open',
+						value: 'open',
+					},
+					{
+						name: 'In Progress',
+						value: 'in_progress',
+					},
+					{
+						name: 'Resolved',
+						value: 'resolved',
+					},
+					{
+						name: 'Closed',
+						value: 'closed',
+					},
+				],
 				default: [],
-				placeholder: 'Add owner ID',
-				description: 'Filter by owner IDs',
-			},
-			{
-				displayName: 'Manager ID(s)',
-				name: 'manager',
-				type: 'string',
-				typeOptions: {
-					multipleValues: true,
-				},
-				default: [],
-				placeholder: 'Add manager ID',
-				description: 'Filter by manager IDs',
+				description: 'Filter findings by state',
 			},
 		],
 	},

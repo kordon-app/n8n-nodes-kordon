@@ -97,6 +97,7 @@ export const requirementOperations: INodeProperties = {
 				send: {
 					preSend: [
 						async function (this, requestOptions) {
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
 							const body = requestOptions.body as any;
 
 							// Handle label_ids if present
@@ -159,7 +160,9 @@ export const requirementOperations: INodeProperties = {
 				send: {
 					preSend: [
 						async function (this, requestOptions) {
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
 							const updateFields = this.getNodeParameter('updateFields', {}) as { [key: string]: any };
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
 							const requirement: { [key: string]: any } = {};
 
 							for (const key of Object.keys(updateFields)) {
@@ -291,41 +294,6 @@ export const requirementFields: INodeProperties[] = [
 		},
 		options: [
 			{
-				displayName: 'Description',
-				name: 'description',
-				type: 'string',
-				default: '',
-				description: 'Detailed description of the requirement (HTML supported)',
-			},
-			{
-				displayName: 'Chapter Name',
-				name: 'chapterName',
-				type: 'string',
-				default: '',
-				description: 'Name of the chapter',
-			},
-			{
-				displayName: 'Chapter Number',
-				name: 'chapterNumber',
-				type: 'string',
-				default: '',
-				description: 'Number of the chapter',
-			},
-			{
-				displayName: 'Paragraph Number',
-				name: 'paragraphNumber',
-				type: 'string',
-				default: '',
-				description: 'Number of the paragraph',
-			},
-			{
-				displayName: 'Meaning',
-				name: 'meaning',
-				type: 'string',
-				default: '',
-				description: 'Explanation of the requirement meaning',
-			},
-			{
 				displayName: 'Applicability',
 				name: 'isApplicable',
 				type: 'options',
@@ -343,6 +311,27 @@ export const requirementFields: INodeProperties[] = [
 				description: 'Whether the requirement is applicable',
 			},
 			{
+				displayName: 'Chapter Name',
+				name: 'chapterName',
+				type: 'string',
+				default: '',
+				description: 'Name of the chapter',
+			},
+			{
+				displayName: 'Chapter Number',
+				name: 'chapterNumber',
+				type: 'string',
+				default: '',
+				description: 'Number of the chapter',
+			},
+			{
+				displayName: 'Description',
+				name: 'description',
+				type: 'string',
+				default: '',
+				description: 'Detailed description of the requirement (HTML supported)',
+			},
+			{
 				displayName: 'Labels',
 				name: 'labels',
 				type: 'string',
@@ -352,6 +341,20 @@ export const requirementFields: INodeProperties[] = [
 				typeOptions: {
 					multipleValues: true,
 				},
+			},
+			{
+				displayName: 'Meaning',
+				name: 'meaning',
+				type: 'string',
+				default: '',
+				description: 'Explanation of the requirement meaning',
+			},
+			{
+				displayName: 'Paragraph Number',
+				name: 'paragraphNumber',
+				type: 'string',
+				default: '',
+				description: 'Number of the paragraph',
 			},
 		],
 	},
@@ -388,55 +391,6 @@ export const requirementFields: INodeProperties[] = [
 		},
 		options: [
 			{
-				displayName: 'Title',
-				name: 'title',
-				type: 'string',
-				default: '',
-				description: 'The title of the requirement',
-			},
-			{
-				displayName: 'Framework ID',
-				name: 'frameworkId',
-				type: 'string',
-				default: '',
-				description: 'The ID of the framework (regulation) this requirement belongs to',
-			},
-			{
-				displayName: 'Description',
-				name: 'description',
-				type: 'string',
-				default: '',
-				description: 'Detailed description of the requirement (HTML supported)',
-			},
-			{
-				displayName: 'Chapter Name',
-				name: 'chapterName',
-				type: 'string',
-				default: '',
-				description: 'Name of the chapter',
-			},
-			{
-				displayName: 'Chapter Number',
-				name: 'chapterNumber',
-				type: 'string',
-				default: '',
-				description: 'Number of the chapter',
-			},
-			{
-				displayName: 'Paragraph Number',
-				name: 'paragraphNumber',
-				type: 'string',
-				default: '',
-				description: 'Number of the paragraph',
-			},
-			{
-				displayName: 'Meaning',
-				name: 'meaning',
-				type: 'string',
-				default: '',
-				description: 'Explanation of the requirement meaning',
-			},
-			{
 				displayName: 'Applicability',
 				name: 'isApplicable',
 				type: 'options',
@@ -454,6 +408,34 @@ export const requirementFields: INodeProperties[] = [
 				description: 'Whether the requirement is applicable',
 			},
 			{
+				displayName: 'Chapter Name',
+				name: 'chapterName',
+				type: 'string',
+				default: '',
+				description: 'Name of the chapter',
+			},
+			{
+				displayName: 'Chapter Number',
+				name: 'chapterNumber',
+				type: 'string',
+				default: '',
+				description: 'Number of the chapter',
+			},
+			{
+				displayName: 'Description',
+				name: 'description',
+				type: 'string',
+				default: '',
+				description: 'Detailed description of the requirement (HTML supported)',
+			},
+			{
+				displayName: 'Framework ID',
+				name: 'frameworkId',
+				type: 'string',
+				default: '',
+				description: 'The ID of the framework (regulation) this requirement belongs to',
+			},
+			{
 				displayName: 'Labels',
 				name: 'labels',
 				type: 'string',
@@ -463,6 +445,27 @@ export const requirementFields: INodeProperties[] = [
 				typeOptions: {
 					multipleValues: true,
 				},
+			},
+			{
+				displayName: 'Meaning',
+				name: 'meaning',
+				type: 'string',
+				default: '',
+				description: 'Explanation of the requirement meaning',
+			},
+			{
+				displayName: 'Paragraph Number',
+				name: 'paragraphNumber',
+				type: 'string',
+				default: '',
+				description: 'Number of the paragraph',
+			},
+			{
+				displayName: 'Title',
+				name: 'title',
+				type: 'string',
+				default: '',
+				description: 'The title of the requirement',
 			},
 		],
 	},
@@ -517,14 +520,6 @@ export const requirementFields: INodeProperties[] = [
 		},
 		options: [
 			{
-				displayName: 'Framework ID',
-				name: 'frameworkId',
-				type: 'string',
-				default: '',
-				placeholder: '023fb404-56f6-49cd-9379-dbf584d2eef8',
-				description: 'The ID of the framework to get requirements for',
-			},
-			{
 				displayName: 'Applicability',
 				name: 'applicability',
 				type: 'multiOptions',
@@ -568,6 +563,14 @@ export const requirementFields: INodeProperties[] = [
 				],
 				default: [],
 				description: 'Filter requirements by control status',
+			},
+			{
+				displayName: 'Framework ID',
+				name: 'frameworkId',
+				type: 'string',
+				default: '',
+				placeholder: '023fb404-56f6-49cd-9379-dbf584d2eef8',
+				description: 'The ID of the framework to get requirements for',
 			},
 			{
 				displayName: 'Labels',

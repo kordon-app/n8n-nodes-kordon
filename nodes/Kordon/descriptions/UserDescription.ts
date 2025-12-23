@@ -98,6 +98,7 @@ export const userOperations: INodeProperties = {
 				send: {
 					preSend: [
 						async function (this, requestOptions) {
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
 							const updateFields = this.getNodeParameter('updateFields', 0) as { [key: string]: any };
 
 							// Wrap in 'user' object as expected by API

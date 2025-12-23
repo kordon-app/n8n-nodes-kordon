@@ -21,6 +21,7 @@ export const businessProcessOperations: INodeProperties = {
 				send: {
 					preSend: [
 						async function (this, requestOptions) {
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
 							const body = requestOptions.body as any;
 							
 							// Handle label_ids if present
@@ -147,7 +148,9 @@ export const businessProcessOperations: INodeProperties = {
 				send: {
 					preSend: [
 						async function (this, requestOptions) {
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
 							const updateFields = this.getNodeParameter('updateFields', {}) as { [key: string]: any };
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
 							const businessProcess: { [key: string]: any } = {};
 
 							for (const key of Object.keys(updateFields)) {
@@ -379,20 +382,17 @@ export const businessProcessFields: INodeProperties[] = [
 				description: 'The criticality of the business process',
 			},
 			{
-				displayName: 'Monetary Value',
-				name: 'monetary_value',
-				type: 'number',
-				default: 0,
-				description: 'The monetary value of the business process',
-			},
-			{
 				displayName: 'Currency',
 				name: 'currency',
 				type: 'options',
 				options: [
 					{
-						name: 'USD',
-						value: 'USD',
+						name: 'AUD',
+						value: 'AUD',
+					},
+					{
+						name: 'CAD',
+						value: 'CAD',
 					},
 					{
 						name: 'EUR',
@@ -407,16 +407,22 @@ export const businessProcessFields: INodeProperties[] = [
 						value: 'JPY',
 					},
 					{
-						name: 'CAD',
-						value: 'CAD',
-					},
-					{
-						name: 'AUD',
-						value: 'AUD',
+						name: 'USD',
+						value: 'USD',
 					},
 				],
 				default: 'USD',
 				description: 'The currency of the monetary value',
+			},
+			{
+				displayName: 'Description',
+				name: 'description',
+				type: 'string',
+				typeOptions: {
+					rows: 4,
+				},
+				default: '',
+				description: 'The description of the business process',
 			},
 			{
 				displayName: 'Labels',
@@ -430,14 +436,11 @@ export const businessProcessFields: INodeProperties[] = [
 				},
 			},
 			{
-				displayName: 'Description',
-				name: 'description',
-				type: 'string',
-				typeOptions: {
-					rows: 4,
-				},
-				default: '',
-				description: 'The description of the business process',
+				displayName: 'Monetary Value',
+				name: 'monetary_value',
+				type: 'number',
+				default: 0,
+				description: 'The monetary value of the business process',
 			},
 		],
 	},
@@ -474,20 +477,6 @@ export const businessProcessFields: INodeProperties[] = [
 		},
 		options: [
 			{
-				displayName: 'Title',
-				name: 'title',
-				type: 'string',
-				default: '',
-				description: 'The title of the business process',
-			},
-			{
-				displayName: 'Owner ID',
-				name: 'ownerId',
-				type: 'string',
-				default: '',
-				description: 'The ID of the owner',
-			},
-			{
 				displayName: 'Criticality',
 				name: 'criticality',
 				type: 'options',
@@ -509,20 +498,17 @@ export const businessProcessFields: INodeProperties[] = [
 				description: 'The criticality of the business process',
 			},
 			{
-				displayName: 'Monetary Value',
-				name: 'monetary_value',
-				type: 'number',
-				default: 0,
-				description: 'The monetary value of the business process',
-			},
-			{
 				displayName: 'Currency',
 				name: 'currency',
 				type: 'options',
 				options: [
 					{
-						name: 'USD',
-						value: 'USD',
+						name: 'AUD',
+						value: 'AUD',
+					},
+					{
+						name: 'CAD',
+						value: 'CAD',
 					},
 					{
 						name: 'EUR',
@@ -537,16 +523,22 @@ export const businessProcessFields: INodeProperties[] = [
 						value: 'JPY',
 					},
 					{
-						name: 'CAD',
-						value: 'CAD',
-					},
-					{
-						name: 'AUD',
-						value: 'AUD',
+						name: 'USD',
+						value: 'USD',
 					},
 				],
 				default: 'USD',
 				description: 'The currency of the monetary value',
+			},
+			{
+				displayName: 'Description',
+				name: 'description',
+				type: 'string',
+				typeOptions: {
+					rows: 4,
+				},
+				default: '',
+				description: 'The description of the business process',
 			},
 			{
 				displayName: 'Labels',
@@ -560,14 +552,25 @@ export const businessProcessFields: INodeProperties[] = [
 				},
 			},
 			{
-				displayName: 'Description',
-				name: 'description',
+				displayName: 'Monetary Value',
+				name: 'monetary_value',
+				type: 'number',
+				default: 0,
+				description: 'The monetary value of the business process',
+			},
+			{
+				displayName: 'Owner ID',
+				name: 'ownerId',
 				type: 'string',
-				typeOptions: {
-					rows: 4,
-				},
 				default: '',
-				description: 'The description of the business process',
+				description: 'The ID of the owner',
+			},
+			{
+				displayName: 'Title',
+				name: 'title',
+				type: 'string',
+				default: '',
+				description: 'The title of the business process',
 			},
 		],
 	},

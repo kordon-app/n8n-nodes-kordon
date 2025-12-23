@@ -36,7 +36,6 @@
             "dist/credentials/GithubIssuesOAuth2Api.credentials.js"
         ],
         "nodes": [
-            "dist/nodes/GithubIssues/GithubIssues.node.js",
             "dist/nodes/Kordon/Kordon.node.js"
         ]
     },

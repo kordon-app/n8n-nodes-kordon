@@ -97,26 +97,53 @@ export const requirementOperations: INodeProperties = {
 				send: {
 					preSend: [
 						async function (this, requestOptions) {
+							// Build the body from evaluated parameters to ensure expressions are resolved
+							const title = this.getNodeParameter('title') as string;
+							const frameworkId = this.getNodeParameter('frameworkId') as string;
 							// eslint-disable-next-line @typescript-eslint/no-explicit-any
-							const body = requestOptions.body as any;
+							const additionalFields = this.getNodeParameter('additionalFields', {}) as { [key: string]: any };
 
-							// Handle label_ids if present
-							if (body.requirement && body.requirement.label_ids) {
-								if (typeof body.requirement.label_ids === 'string') {
-									body.requirement.label_ids = (body.requirement.label_ids as string).split(',').map((id: string) => id.trim());
-								} else if (!Array.isArray(body.requirement.label_ids)) {
-									body.requirement.label_ids = [body.requirement.label_ids];
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
+							const requirement: { [key: string]: any } = {
+								title: title,
+								regulation_ids: [frameworkId],
+							};
+
+							// Add optional fields if provided
+							if (additionalFields.description !== undefined && additionalFields.description !== '') {
+								requirement.description = additionalFields.description;
+							}
+							if (additionalFields.chapterName !== undefined && additionalFields.chapterName !== '') {
+								requirement.chapter_name = additionalFields.chapterName;
+							}
+							if (additionalFields.chapterNumber !== undefined && additionalFields.chapterNumber !== '') {
+								requirement.chapter_number = additionalFields.chapterNumber;
+							}
+							if (additionalFields.paragraphNumber !== undefined && additionalFields.paragraphNumber !== '') {
+								requirement.paragraph_number = additionalFields.paragraphNumber;
+							}
+							if (additionalFields.meaning !== undefined && additionalFields.meaning !== '') {
+								requirement.meaning = additionalFields.meaning;
+							}
+							if (additionalFields.isApplicable !== undefined) {
+								requirement.is_applicable = additionalFields.isApplicable;
+							}
+
+							// Handle label_ids - convert to array if needed
+							if (additionalFields.labels !== undefined && additionalFields.labels !== '') {
+								const labels = additionalFields.labels;
+								if (typeof labels === 'string') {
+									requirement.label_ids = labels.split(',').map((id: string) => id.trim());
+								} else if (Array.isArray(labels)) {
+									requirement.label_ids = labels;
+								} else {
+									requirement.label_ids = [labels];
 								}
 							}
 
-							// Handle regulation_ids (Framework ID) - ensure it's an array
-							if (body.requirement && body.requirement.regulation_ids) {
-								if (typeof body.requirement.regulation_ids === 'string') {
-									body.requirement.regulation_ids = [body.requirement.regulation_ids];
-								} else if (!Array.isArray(body.requirement.regulation_ids)) {
-									body.requirement.regulation_ids = [body.requirement.regulation_ids];
-								}
-							}
+							requestOptions.body = {
+								requirement: requirement,
+							};
 
 							return requestOptions;
 						},
@@ -125,19 +152,6 @@ export const requirementOperations: INodeProperties = {
 				request: {
 					method: 'POST',
 					url: '/requirements',
-					body: {
-						requirement: {
-							title: '={{$parameter.title}}',
-							regulation_ids: '={{$parameter.frameworkId}}',
-							description: '={{$parameter.additionalFields.description}}',
-							chapter_name: '={{$parameter.additionalFields.chapterName}}',
-							chapter_number: '={{$parameter.additionalFields.chapterNumber}}',
-							paragraph_number: '={{$parameter.additionalFields.paragraphNumber}}',
-							meaning: '={{$parameter.additionalFields.meaning}}',
-							label_ids: '={{$parameter.additionalFields.labels}}',
-							is_applicable: '={{$parameter.additionalFields.isApplicable}}',
-						},
-					},
 				},
 				output: {
 					postReceive: [

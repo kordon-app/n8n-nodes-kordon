@@ -109,23 +109,61 @@ export const vendorOperations: INodeProperties = {
 				send: {
 					preSend: [
 						async function (this, requestOptions) {
-							// Handle array parameters for label_ids
+							// Build the body from evaluated parameters to ensure expressions are resolved
+							const title = this.getNodeParameter('title') as string;
+							const managerId = this.getNodeParameter('managerId') as string;
+							const ownerId = this.getNodeParameter('ownerId') as string;
+							const state = this.getNodeParameter('state') as string;
 							// eslint-disable-next-line @typescript-eslint/no-explicit-any
-							const body = requestOptions.body as any;
-							if (body && body.vendor && body.vendor.label_ids) {
-								if (typeof body.vendor.label_ids === 'string') {
-									body.vendor.label_ids = body.vendor.label_ids.split(',').map((id: string) => id.trim());
-								} else if (!Array.isArray(body.vendor.label_ids)) {
-									body.vendor.label_ids = [body.vendor.label_ids];
+							const additionalFields = this.getNodeParameter('additionalFields', {}) as { [key: string]: any };
+
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
+							const vendor: { [key: string]: any } = {
+								title: title,
+								manager_id: managerId,
+								owner_id: ownerId,
+								state: state,
+							};
+
+							// Add optional fields if provided
+							if (additionalFields.criticality !== undefined && additionalFields.criticality !== '') {
+								vendor.criticality = additionalFields.criticality;
+							}
+							if (additionalFields.description !== undefined && additionalFields.description !== '') {
+								vendor.description = additionalFields.description;
+							}
+							if (additionalFields.contact !== undefined && additionalFields.contact !== '') {
+								vendor.contact = additionalFields.contact;
+							}
+							if (additionalFields.country !== undefined && additionalFields.country !== '') {
+								vendor.country = additionalFields.country;
+							}
+							if (additionalFields.website !== undefined && additionalFields.website !== '') {
+								vendor.website = additionalFields.website;
+							}
+							if (additionalFields.contractStartDate !== undefined && additionalFields.contractStartDate !== '') {
+								vendor.contract_start_date = additionalFields.contractStartDate;
+							}
+							if (additionalFields.contractEndDate !== undefined && additionalFields.contractEndDate !== '') {
+								vendor.contract_end_date = additionalFields.contractEndDate;
+							}
+							if (additionalFields.personalDataClassification !== undefined && additionalFields.personalDataClassification !== '') {
+								vendor.personal_data_classification = additionalFields.personalDataClassification;
+							}
+
+							// Handle labels - convert to array if needed
+							if (additionalFields.labels !== undefined && additionalFields.labels !== '') {
+								const labels = additionalFields.labels;
+								if (typeof labels === 'string') {
+									vendor.label_ids = labels.split(',').map((id: string) => id.trim());
+								} else if (Array.isArray(labels)) {
+									vendor.label_ids = labels;
+								} else {
+									vendor.label_ids = [labels];
 								}
 							}
 
-							// Log request details for debugging
-							this.logger.info('=== Kordon Vendor Create Request ===');
-							this.logger.info('URL: ' + requestOptions.url);
-							this.logger.info('Method: ' + requestOptions.method);
-							this.logger.info('Body: ' + JSON.stringify(body));
-							this.logger.info('========================');
+							requestOptions.body = { vendor: vendor };
 
 							return requestOptions;
 						},
@@ -134,23 +172,6 @@ export const vendorOperations: INodeProperties = {
 				request: {
 					method: 'POST',
 					url: '/vendors',
-					body: {
-						vendor: {
-							title: '={{$parameter.title}}',
-							manager_id: '={{$parameter.managerId}}',
-							owner_id: '={{$parameter.ownerId}}',
-							state: '={{$parameter.state}}',
-							criticality: '={{$parameter.additionalFields.criticality}}',
-							description: '={{$parameter.additionalFields.description}}',
-							contact: '={{$parameter.additionalFields.contact}}',
-							country: '={{$parameter.additionalFields.country}}',
-							website: '={{$parameter.additionalFields.website}}',
-							contract_start_date: '={{$parameter.additionalFields.contractStartDate}}',
-							contract_end_date: '={{$parameter.additionalFields.contractEndDate}}',
-							personal_data_classification: '={{$parameter.additionalFields.personalDataClassification}}',
-							label_ids: '={{$parameter.additionalFields.labels}}',
-						},
-					},
 				},
 				output: {
 					postReceive: [

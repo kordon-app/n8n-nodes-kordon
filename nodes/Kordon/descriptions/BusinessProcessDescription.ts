@@ -21,25 +21,46 @@ export const businessProcessOperations: INodeProperties = {
 				send: {
 					preSend: [
 						async function (this, requestOptions) {
+							// Build the body from evaluated parameters to ensure expressions are resolved
+							const title = this.getNodeParameter('title') as string;
+							const ownerId = this.getNodeParameter('owner_id') as string;
 							// eslint-disable-next-line @typescript-eslint/no-explicit-any
-							const body = requestOptions.body as any;
-							
-							// Handle label_ids if present
-							if (body.business_process && body.business_process.label_ids) {
-								if (typeof body.business_process.label_ids === 'string') {
-									body.business_process.label_ids = (body.business_process.label_ids as string).split(',').map((id: string) => id.trim());
-								} else if (!Array.isArray(body.business_process.label_ids)) {
-									body.business_process.label_ids = [body.business_process.label_ids];
+							const additionalFields = this.getNodeParameter('additionalFields', {}) as { [key: string]: any };
+
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
+							const businessProcess: { [key: string]: any } = {
+								title: title,
+								owner_id: ownerId,
+							};
+
+							// Add optional fields if provided
+							if (additionalFields.criticality !== undefined && additionalFields.criticality !== '') {
+								businessProcess.criticality = additionalFields.criticality;
+							}
+							if (additionalFields.monetary_value !== undefined && additionalFields.monetary_value !== '') {
+								businessProcess.monetary_value = additionalFields.monetary_value;
+							}
+							if (additionalFields.currency !== undefined && additionalFields.currency !== '') {
+								businessProcess.currency = additionalFields.currency;
+							}
+							if (additionalFields.description !== undefined && additionalFields.description !== '') {
+								businessProcess.description = additionalFields.description;
+							}
+
+							// Handle labels - convert to array if needed
+							if (additionalFields.labels !== undefined && additionalFields.labels !== '') {
+								const labels = additionalFields.labels;
+								if (typeof labels === 'string') {
+									businessProcess.label_ids = labels.split(',').map((id: string) => id.trim());
+								} else if (Array.isArray(labels)) {
+									businessProcess.label_ids = labels;
+								} else {
+									businessProcess.label_ids = [labels];
 								}
 							}
 
-							// Log request details for debugging
-							this.logger.info('=== Kordon API Request (Create Business Process) ===');
-							this.logger.info('URL: ' + requestOptions.url);
-							this.logger.info('Method: ' + requestOptions.method);
-							this.logger.info('Body: ' + JSON.stringify(requestOptions.body));
-							this.logger.info('========================');
-							
+							requestOptions.body = { business_process: businessProcess };
+
 							return requestOptions;
 						},
 					],
@@ -47,17 +68,6 @@ export const businessProcessOperations: INodeProperties = {
 				request: {
 					method: 'POST',
 					url: '/business-processes',
-					body: {
-						business_process: {
-							title: '={{$parameter.title}}',
-							owner_id: '={{$parameter.owner_id}}',
-							criticality: '={{$parameter.additionalFields.criticality}}',
-							monetary_value: '={{$parameter.additionalFields.monetary_value}}',
-							currency: '={{$parameter.additionalFields.currency}}',
-							label_ids: '={{$parameter.additionalFields.labels}}',
-							description: '={{$parameter.additionalFields.description}}',
-						},
-					},
 				},
 				output: {
 					postReceive: [

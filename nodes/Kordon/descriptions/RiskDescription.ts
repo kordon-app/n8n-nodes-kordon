@@ -98,24 +98,44 @@ export const riskOperations: INodeProperties = {
 				send: {
 					preSend: [
 						async function (this, requestOptions) {
+							// Build the body from evaluated parameters to ensure expressions are resolved
+							const title = this.getNodeParameter('title') as string;
+							const managerId = this.getNodeParameter('managerId') as string;
+							const ownerId = this.getNodeParameter('ownerId') as string;
 							// eslint-disable-next-line @typescript-eslint/no-explicit-any
-							const body = requestOptions.body as any;
+							const additionalFields = this.getNodeParameter('additionalFields', {}) as { [key: string]: any };
 
-							// Handle label_ids if present
-							if (body.risk && body.risk.label_ids) {
-								if (typeof body.risk.label_ids === 'string') {
-									body.risk.label_ids = (body.risk.label_ids as string).split(',').map((id: string) => id.trim());
-								} else if (!Array.isArray(body.risk.label_ids)) {
-									body.risk.label_ids = [body.risk.label_ids];
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
+							const risk: { [key: string]: any } = {
+								title: title,
+								manager_id: managerId,
+								owner_id: ownerId,
+							};
+
+							// Add optional fields if provided
+							if (additionalFields.impact !== undefined && additionalFields.impact !== '') {
+								risk.impact = additionalFields.impact;
+							}
+							if (additionalFields.probability !== undefined && additionalFields.probability !== '') {
+								risk.probability = additionalFields.probability;
+							}
+							if (additionalFields.description !== undefined && additionalFields.description !== '') {
+								risk.description = additionalFields.description;
+							}
+
+							// Handle labels - convert to array if needed
+							if (additionalFields.labels !== undefined && additionalFields.labels !== '') {
+								const labels = additionalFields.labels;
+								if (typeof labels === 'string') {
+									risk.label_ids = labels.split(',').map((id: string) => id.trim());
+								} else if (Array.isArray(labels)) {
+									risk.label_ids = labels;
+								} else {
+									risk.label_ids = [labels];
 								}
 							}
 
-							// Log request details for debugging
-							this.logger.info('=== Kordon API Request (Create Risk) ===');
-							this.logger.info('URL: ' + requestOptions.url);
-							this.logger.info('Method: ' + requestOptions.method);
-							this.logger.info('Body: ' + JSON.stringify(requestOptions.body));
-							this.logger.info('========================');
+							requestOptions.body = { risk: risk };
 
 							return requestOptions;
 						},
@@ -124,17 +144,6 @@ export const riskOperations: INodeProperties = {
 				request: {
 					method: 'POST',
 					url: '/risks',
-					body: {
-						risk: {
-							title: '={{$parameter.title}}',
-							manager_id: '={{$parameter.managerId}}',
-							owner_id: '={{$parameter.ownerId}}',
-							impact: '={{$parameter.additionalFields.impact}}',
-							probability: '={{$parameter.additionalFields.probability}}',
-							description: '={{$parameter.additionalFields.description}}',
-							label_ids: '={{$parameter.additionalFields.labels}}',
-						},
-					},
 				},
 				output: {
 					postReceive: [

@@ -116,16 +116,43 @@ export const assetOperations: INodeProperties = {
 				send: {
 					preSend: [
 						async function (this, requestOptions) {
-							// Handle array parameters for label_ids
+							// Build the body from evaluated parameters to ensure expressions are resolved
+							const title = this.getNodeParameter('title') as string;
+							const managerId = this.getNodeParameter('managerId') as string;
+							const ownerId = this.getNodeParameter('ownerId') as string;
+							const description = this.getNodeParameter('description') as string;
+							const assetValue = this.getNodeParameter('assetValue') as string;
 							// eslint-disable-next-line @typescript-eslint/no-explicit-any
-							const body = requestOptions.body as any;
-							if (body && body.asset && body.asset.label_ids) {
-								if (typeof body.asset.label_ids === 'string') {
-									body.asset.label_ids = body.asset.label_ids.split(',').map((id: string) => id.trim());
-								} else if (!Array.isArray(body.asset.label_ids)) {
-									body.asset.label_ids = [body.asset.label_ids];
+							const additionalFields = this.getNodeParameter('additionalFields', {}) as { [key: string]: any };
+
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
+							const asset: { [key: string]: any } = {
+								title: title,
+								manager_id: managerId,
+								owner_id: ownerId,
+								description: description,
+								asset_value: assetValue,
+							};
+
+							// Add optional fields if provided
+							if (additionalFields.state !== undefined && additionalFields.state !== '') {
+								asset.state = additionalFields.state;
+							}
+
+							// Handle labels - convert to array if needed
+							if (additionalFields.labels !== undefined && additionalFields.labels !== '') {
+								const labels = additionalFields.labels;
+								if (typeof labels === 'string') {
+									asset.label_ids = labels.split(',').map((id: string) => id.trim());
+								} else if (Array.isArray(labels)) {
+									asset.label_ids = labels;
+								} else {
+									asset.label_ids = [labels];
 								}
 							}
+
+							requestOptions.body = { asset: asset };
+
 							return requestOptions;
 						},
 					],
@@ -133,17 +160,6 @@ export const assetOperations: INodeProperties = {
 				request: {
 					method: 'POST',
 					url: '/assets',
-					body: {
-						asset: {
-							title: '={{$parameter.title}}',
-							manager_id: '={{$parameter.managerId}}',
-							owner_id: '={{$parameter.ownerId}}',
-							description: '={{$parameter.description}}',
-							asset_value: '={{$parameter.assetValue}}',
-							state: '={{$parameter.additionalFields.state}}',
-							label_ids: '={{$parameter.additionalFields.labels}}',
-						},
-					},
 				},
 				output: {
 					postReceive: [

@@ -91,25 +91,41 @@ export const controlOperations: INodeProperties = {
 				send: {
 					preSend: [
 						async function (this, requestOptions) {
+							// Build the body from evaluated parameters to ensure expressions are resolved
+							const title = this.getNodeParameter('title') as string;
+							const ownerId = this.getNodeParameter('ownerId') as string;
+							const kind = this.getNodeParameter('kind') as string;
+							const beginsAt = this.getNodeParameter('beginsAt') as string;
 							// eslint-disable-next-line @typescript-eslint/no-explicit-any
-							const body = requestOptions.body as any;
-							
-							// Handle label_ids if present
-							if (body.control && body.control.label_ids) {
-								if (typeof body.control.label_ids === 'string') {
-									body.control.label_ids = (body.control.label_ids as string).split(',').map((id: string) => id.trim());
-								} else if (!Array.isArray(body.control.label_ids)) {
-									body.control.label_ids = [body.control.label_ids];
+							const additionalFields = this.getNodeParameter('additionalFields', {}) as { [key: string]: any };
+
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
+							const control: { [key: string]: any } = {
+								title: title,
+								owner_id: ownerId,
+								kind: kind,
+								begins_at: beginsAt,
+							};
+
+							// Add optional fields if provided
+							if (additionalFields.description !== undefined && additionalFields.description !== '') {
+								control.description = additionalFields.description;
+							}
+
+							// Handle labels - convert to array if needed
+							if (additionalFields.labels !== undefined && additionalFields.labels !== '') {
+								const labels = additionalFields.labels;
+								if (typeof labels === 'string') {
+									control.label_ids = labels.split(',').map((id: string) => id.trim());
+								} else if (Array.isArray(labels)) {
+									control.label_ids = labels;
+								} else {
+									control.label_ids = [labels];
 								}
 							}
 
-							// Log request details for debugging
-							this.logger.info('=== Kordon API Request (Create Control) ===');
-							this.logger.info('URL: ' + requestOptions.url);
-							this.logger.info('Method: ' + requestOptions.method);
-							this.logger.info('Body: ' + JSON.stringify(requestOptions.body));
-							this.logger.info('========================');
-							
+							requestOptions.body = { control: control };
+
 							return requestOptions;
 						},
 					],
@@ -117,16 +133,6 @@ export const controlOperations: INodeProperties = {
 				request: {
 					method: 'POST',
 					url: '/controls',
-					body: {
-						control: {
-							title: '={{$parameter.title}}',
-							owner_id: '={{$parameter.ownerId}}',
-							kind: '={{$parameter.kind}}',
-							begins_at: '={{$parameter.beginsAt}}',
-							description: '={{$parameter.additionalFields.description}}',
-							label_ids: '={{$parameter.additionalFields.labels}}',
-						},
-					},
 				},
 				output: {
 					postReceive: [

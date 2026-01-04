@@ -90,20 +90,59 @@ export const taskOperations: INodeProperties = {
 			description: 'Create a new task',
 			action: 'Create a task',
 			routing: {
+				send: {
+					preSend: [
+						async function (this, requestOptions) {
+							// Build the body from evaluated parameters to ensure expressions are resolved
+							const title = this.getNodeParameter('title') as string;
+							const assigneeId = this.getNodeParameter('assigneeId') as string;
+							const kind = this.getNodeParameter('kind') as string;
+							const frequency = this.getNodeParameter('frequency') as string;
+							const dueAt = this.getNodeParameter('dueAt') as string;
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
+							const additionalFields = this.getNodeParameter('additionalFields', {}) as { [key: string]: any };
+
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
+							const task: { [key: string]: any } = {
+								title: title,
+								assignee_id: assigneeId,
+								kind: kind,
+								frequency: frequency,
+								due_at: dueAt,
+							};
+
+							// Add optional fields if provided
+							if (additionalFields.description !== undefined && additionalFields.description !== '') {
+								task.description = additionalFields.description;
+							}
+							if (additionalFields.needsEvidence !== undefined) {
+								task.needs_evidence = additionalFields.needsEvidence;
+							}
+							if (additionalFields.duration !== undefined && additionalFields.duration !== '') {
+								task.duration = additionalFields.duration;
+							}
+
+							// Handle labels - convert to array if needed
+							if (additionalFields.labels !== undefined && additionalFields.labels !== '') {
+								const labels = additionalFields.labels;
+								if (typeof labels === 'string') {
+									task.label_ids = labels.split(',').map((id: string) => id.trim());
+								} else if (Array.isArray(labels)) {
+									task.label_ids = labels;
+								} else {
+									task.label_ids = [labels];
+								}
+							}
+
+							requestOptions.body = task;
+
+							return requestOptions;
+						},
+					],
+				},
 				request: {
 					method: 'POST',
 					url: '/tasks',
-					body: {
-						title: '={{$parameter.title}}',
-						assignee_id: '={{$parameter.assigneeId}}',
-						kind: '={{$parameter.kind}}',
-						frequency: '={{$parameter.frequency}}',
-						due_at: '={{$parameter.dueAt}}',
-						description: '={{$parameter.additionalFields.description}}',
-						needs_evidence: '={{$parameter.additionalFields.needsEvidence}}',
-						duration: '={{$parameter.additionalFields.duration}}',
-						labels: '={{$parameter.additionalFields.labels}}',
-					},
 				},
 				output: {
 					postReceive: [

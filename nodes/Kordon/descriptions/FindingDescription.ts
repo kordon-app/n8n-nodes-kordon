@@ -99,24 +99,48 @@ export const findingOperations: INodeProperties = {
 				send: {
 					preSend: [
 						async function (this, requestOptions) {
+							// Build the body from evaluated parameters to ensure expressions are resolved
+							const title = this.getNodeParameter('title') as string;
+							const kind = this.getNodeParameter('kind') as string;
+							const ownerGroupId = this.getNodeParameter('ownerGroupId') as string;
+							const managerGroupId = this.getNodeParameter('managerGroupId') as string;
+							const state = this.getNodeParameter('state') as string;
+							const priority = this.getNodeParameter('priority') as string;
+							const source = this.getNodeParameter('source') as string;
+							const dateDiscovered = this.getNodeParameter('dateDiscovered') as string;
 							// eslint-disable-next-line @typescript-eslint/no-explicit-any
-							const body = requestOptions.body as any;
+							const additionalFields = this.getNodeParameter('additionalFields', {}) as { [key: string]: any };
 
-							// Handle label_ids if present
-							if (body.finding && body.finding.label_ids) {
-								if (typeof body.finding.label_ids === 'string') {
-									body.finding.label_ids = (body.finding.label_ids as string).split(',').map((id: string) => id.trim());
-								} else if (!Array.isArray(body.finding.label_ids)) {
-									body.finding.label_ids = [body.finding.label_ids];
+							// eslint-disable-next-line @typescript-eslint/no-explicit-any
+							const finding: { [key: string]: any } = {
+								title: title,
+								kind: kind,
+								owner_group_id: ownerGroupId,
+								manager_group_id: managerGroupId,
+								state: state,
+								priority: priority,
+								source: source,
+								date_discovered: dateDiscovered,
+							};
+
+							// Add optional fields if provided
+							if (additionalFields.description !== undefined && additionalFields.description !== '') {
+								finding.description = additionalFields.description;
+							}
+
+							// Handle labels - convert to array if needed
+							if (additionalFields.labels !== undefined && additionalFields.labels !== '') {
+								const labels = additionalFields.labels;
+								if (typeof labels === 'string') {
+									finding.label_ids = labels.split(',').map((id: string) => id.trim());
+								} else if (Array.isArray(labels)) {
+									finding.label_ids = labels;
+								} else {
+									finding.label_ids = [labels];
 								}
 							}
 
-							// Log request details for debugging
-							this.logger.info('=== Kordon API Request (Create Finding) ===');
-							this.logger.info('URL: ' + requestOptions.url);
-							this.logger.info('Method: ' + requestOptions.method);
-							this.logger.info('Body: ' + JSON.stringify(requestOptions.body));
-							this.logger.info('========================');
+							requestOptions.body = { finding: finding };
 
 							return requestOptions;
 						},
@@ -125,20 +149,6 @@ export const findingOperations: INodeProperties = {
 				request: {
 					method: 'POST',
 					url: '/findings',
-					body: {
-						finding: {
-							title: '={{$parameter.title}}',
-							kind: '={{$parameter.kind}}',
-							owner_group_id: '={{$parameter.ownerGroupId}}',
-							manager_group_id: '={{$parameter.managerGroupId}}',
-							state: '={{$parameter.state}}',
-							priority: '={{$parameter.priority}}',
-							source: '={{$parameter.source}}',
-							date_discovered: '={{$parameter.dateDiscovered}}',
-							description: '={{$parameter.additionalFields.description}}',
-							label_ids: '={{$parameter.additionalFields.labels}}',
-						},
-					},
 				},
 				output: {
 					postReceive: [

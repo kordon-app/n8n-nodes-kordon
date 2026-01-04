@@ -128,6 +128,9 @@ export const requirementOperations: INodeProperties = {
 							if (additionalFields.isApplicable !== undefined) {
 								requirement.is_applicable = additionalFields.isApplicable;
 							}
+							if (additionalFields.applicabilityNote !== undefined && additionalFields.applicabilityNote !== '') {
+								requirement.applicability_note = additionalFields.applicabilityNote;
+							}
 
 							// Handle label_ids - convert to array if needed
 							if (additionalFields.labels !== undefined && additionalFields.labels !== '') {
@@ -207,6 +210,8 @@ export const requirementOperations: INodeProperties = {
 									requirement['paragraph_number'] = updateFields[key];
 								} else if (key === 'isApplicable') {
 									requirement['is_applicable'] = updateFields[key];
+								} else if (key === 'applicabilityNote') {
+									requirement['applicability_note'] = updateFields[key];
 								} else {
 									requirement[key] = updateFields[key];
 								}
@@ -325,6 +330,13 @@ export const requirementFields: INodeProperties[] = [
 				description: 'Whether the requirement is applicable',
 			},
 			{
+				displayName: 'Applicability Note',
+				name: 'applicabilityNote',
+				type: 'string',
+				default: '',
+				description: 'Note explaining the applicability decision for this requirement',
+			},
+			{
 				displayName: 'Chapter Name',
 				name: 'chapterName',
 				type: 'string',
@@ -420,6 +432,13 @@ export const requirementFields: INodeProperties[] = [
 				],
 				default: true,
 				description: 'Whether the requirement is applicable',
+			},
+			{
+				displayName: 'Applicability Note',
+				name: 'applicabilityNote',
+				type: 'string',
+				default: '',
+				description: 'Note explaining the applicability decision for this requirement',
 			},
 			{
 				displayName: 'Chapter Name',

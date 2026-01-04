@@ -24,12 +24,12 @@ This node supports the following resources and operations:
 | Business Process | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Control | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Finding | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Framework | ✅ | ✅ | - | - | - |
-| Requirement | ✅ | ✅ | - | - | - |
+| Framework | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Requirement | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Risk | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Task | ✅ | ✅ | ✅ | ✅ | ✅ |
-| User | ✅ | ✅ | - | ✅ | - |
-| User Group | ✅ | ✅ | - | - | - |
+| User | ✅ | ✅ | ✅ | ✅ | - |
+| User Group | - | ✅ | ✅ | - | - |
 | Vendor | ✅ | ✅ | ✅ | ✅ | ✅ |
 
 All **Get Many** operations support:
@@ -44,7 +44,7 @@ To use this node, you need a Kordon API key.
 2. Navigate to **Settings → API Keys**
 3. Create a new API key
 4. In n8n, create a new credential of type **Kordon API**:
-   - **Kordon Domain**: Your Kordon instance URL (e.g., \`https://yourcompany.kordon.cloud\`)
+   - **Kordon Domain**: Your Kordon instance URL (e.g., \`https://yourcompany.kordon.app\`)
    - **API Key**: The API key you created
 
 For more details, see the [Kordon API Authentication documentation](https://kordon.app/learn/api/authentication/).

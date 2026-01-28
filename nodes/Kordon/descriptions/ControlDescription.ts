@@ -292,8 +292,7 @@ export const controlOperations: INodeProperties = {
 							const hasBusinessProcesses = newBusinessProcessIds.length > 0;
 							const hasFindings = newFindingIds.length > 0;
 
-							// eslint-disable-next-line @typescript-eslint/no-explicit-any
-							let connections: { [key: string]: string[] } = {};
+							const connections: { [key: string]: string[] } = {};
 
 							if (replaceExisting) {
 								// Replace mode: just use the provided IDs directly
@@ -310,7 +309,7 @@ export const controlOperations: INodeProperties = {
 								const apiKey = credentials.apiKey as string;
 
 								// Fetch current control to get existing connections
-								const response = await this.helpers.request({
+								const response = await this.helpers.httpRequest({
 									method: 'GET',
 									url: `${baseUrl}/api/v1/controls/${controlId}`,
 									headers: {

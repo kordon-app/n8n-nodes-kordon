@@ -25,6 +25,7 @@ This node supports the following resources and operations:
 | Control | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Finding | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Framework | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Label | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Requirement | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Risk | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Task | ✅ | ✅ | ✅ | ✅ | ✅ |

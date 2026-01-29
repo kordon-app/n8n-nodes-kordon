@@ -4,6 +4,7 @@ import { businessProcessOperations, businessProcessFields } from './descriptions
 import { controlOperations, controlFields } from './descriptions/ControlDescription';
 import { findingOperations, findingFields } from './descriptions/FindingDescription';
 import { frameworkOperations, frameworkFields } from './descriptions/FrameworkDescription';
+import { labelOperations, labelFields } from './descriptions/LabelDescription';
 import { requirementOperations, requirementFields } from './descriptions/RequirementDescription';
 import { riskOperations, riskFields } from './descriptions/RiskDescription';
 import { taskOperations, taskFields } from './descriptions/TaskDescription';
@@ -76,6 +77,10 @@ export class Kordon implements INodeType {
 						value: 'regulation',
 					},
 					{
+						name: 'Label',
+						value: 'label',
+					},
+					{
 						name: 'Requirement',
 						value: 'requirement',
 					},
@@ -137,9 +142,13 @@ export class Kordon implements INodeType {
 			frameworkOperations,
 			...frameworkFields,
 
-			// Risk operations and fields
-			riskOperations,
-			...riskFields,
+		// Label operations and fields
+		labelOperations,
+		...labelFields,
+
+		// Risk operations and fields
+		riskOperations,
+		...riskFields,
 
 			// Requirement operations and fields
 			requirementOperations,

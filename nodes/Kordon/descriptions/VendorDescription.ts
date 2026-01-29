@@ -270,6 +270,144 @@ export const vendorOperations: INodeProperties = {
 				},
 			},
 		},
+		{
+			name: 'Update Connections',
+			value: 'updateConnections',
+			description: 'Update connections between a vendor and other objects (controls, risks, assets, etc.)',
+			action: 'Update vendor connections',
+			routing: {
+				send: {
+					preSend: [
+						async function (this, requestOptions) {
+							const vendorId = this.getNodeParameter('vendorId') as string;
+							const replaceExisting = this.getNodeParameter('replaceExisting', false) as boolean;
+
+							// Get connection IDs from parameters
+							// Accepts: single ID string, array of IDs, or empty
+							const getConnectionIds = (paramName: string): string[] => {
+								try {
+									const value = this.getNodeParameter(paramName, '');
+									this.logger.info(`[${paramName}] Raw value type: ${typeof value}, isArray: ${Array.isArray(value)}, value: ${JSON.stringify(value)}`);
+									if (!value) return [];
+									if (Array.isArray(value)) {
+										// Flatten in case n8n wraps array in another array [[...]]
+										const flattened = value.flat();
+										const result = flattened.map((v: unknown) => String(v).trim()).filter((v: string) => v);
+										this.logger.info(`[${paramName}] Processed array result: ${JSON.stringify(result)}`);
+										return result;
+									}
+									if (typeof value === 'string' && value.trim()) {
+										// Single ID string
+										return [value.trim()];
+									}
+									return [];
+								} catch {
+									return [];
+								}
+							};
+
+							const newControlIds = getConnectionIds('controlIds');
+							const newRiskIds = getConnectionIds('riskIds');
+							const newAssetIds = getConnectionIds('assetIds');
+							const newBusinessProcessIds = getConnectionIds('businessProcessIds');
+							const newFindingIds = getConnectionIds('findingIds');
+
+							// Check if any connections were provided
+							const hasControls = newControlIds.length > 0;
+							const hasRisks = newRiskIds.length > 0;
+							const hasAssets = newAssetIds.length > 0;
+							const hasBusinessProcesses = newBusinessProcessIds.length > 0;
+							const hasFindings = newFindingIds.length > 0;
+
+							const connections: { [key: string]: string[] } = {};
+
+							if (replaceExisting) {
+								// Replace mode: just use the provided IDs directly
+								if (hasControls) connections.control_ids = newControlIds;
+								if (hasRisks) connections.risk_ids = newRiskIds;
+								if (hasAssets) connections.asset_ids = newAssetIds;
+								if (hasBusinessProcesses) connections.business_process_ids = newBusinessProcessIds;
+								if (hasFindings) connections.finding_ids = newFindingIds;
+							} else {
+								// Merge mode: fetch existing connections and merge with new ones
+								const credentials = await this.getCredentials('kordonApi');
+								const baseUrl = credentials.domain as string;
+								const apiKey = credentials.apiKey as string;
+
+								// Fetch current vendor to get existing connections
+								const response = await this.helpers.httpRequest({
+									method: 'GET',
+									url: `${baseUrl}/api/v1/vendors/${vendorId}`,
+									headers: {
+										'Authorization': `Bearer ${apiKey}`,
+										'Accept': 'application/json',
+									},
+									json: true,
+								});
+
+								const existingVendor = response.data;
+
+								// Helper to extract IDs from existing connections
+								// eslint-disable-next-line @typescript-eslint/no-explicit-any
+								const extractIds = (items: any[] | undefined): string[] => {
+									if (!items || !Array.isArray(items)) return [];
+									// eslint-disable-next-line @typescript-eslint/no-explicit-any
+									return items.map((item: any) => item.id).filter((id: string) => id);
+								};
+
+								// Merge existing with new (deduplicated)
+								const mergeIds = (existing: string[], newIds: string[]): string[] => {
+									return [...new Set([...existing, ...newIds])];
+								};
+
+								// Only include connection types that user provided input for
+								if (hasControls) {
+									connections.control_ids = mergeIds(extractIds(existingVendor.controls), newControlIds);
+								}
+								if (hasRisks) {
+									connections.risk_ids = mergeIds(extractIds(existingVendor.risks), newRiskIds);
+								}
+								if (hasAssets) {
+									connections.asset_ids = mergeIds(extractIds(existingVendor.assets), newAssetIds);
+								}
+								if (hasBusinessProcesses) {
+									connections.business_process_ids = mergeIds(extractIds(existingVendor.business_processes), newBusinessProcessIds);
+								}
+								if (hasFindings) {
+									connections.finding_ids = mergeIds(extractIds(existingVendor.findings), newFindingIds);
+								}
+							}
+
+							requestOptions.body = { connections };
+
+							// Log request details for debugging
+							this.logger.info('=== Kordon API Update Vendor Connections Request ===');
+							this.logger.info('URL: ' + requestOptions.url);
+							this.logger.info('Method: ' + requestOptions.method);
+							this.logger.info('Replace Existing: ' + replaceExisting);
+							this.logger.info('Body: ' + JSON.stringify(requestOptions.body));
+							this.logger.info('====================================================');
+
+							return requestOptions;
+						},
+					],
+				},
+				request: {
+					method: 'PATCH',
+					url: '=/vendors/{{$parameter.vendorId}}/connections',
+				},
+				output: {
+					postReceive: [
+						{
+							type: 'rootProperty',
+							properties: {
+								property: 'data',
+							},
+						},
+					],
+				},
+			},
+		},
 	],
 	default: 'getMany',
 };
@@ -775,5 +913,107 @@ export const vendorFields: INodeProperties[] = [
 				description: 'Website URL',
 			},
 		],
+	},
+
+	// ------------------------
+	// Vendor: Update Connections - Fields
+	// ------------------------
+	{
+		displayName: 'Vendor ID',
+		name: 'vendorId',
+		type: 'string',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['vendor'],
+				operation: ['updateConnections'],
+			},
+		},
+		default: '',
+		placeholder: 'e.g., 550e8400-e29b-41d4-a716-446655440000',
+		description: 'The ID of the vendor to update connections for',
+	},
+	{
+		displayName: 'Replace Existing Connections',
+		name: 'replaceExisting',
+		type: 'boolean',
+		displayOptions: {
+			show: {
+				resource: ['vendor'],
+				operation: ['updateConnections'],
+			},
+		},
+		default: false,
+		description: 'Whether to replace all existing connections with the provided ones. If false (default), new connections will be added to existing ones.',
+	},
+	{
+		displayName: 'Control IDs',
+		name: 'controlIds',
+		type: 'string',
+		displayOptions: {
+			show: {
+				resource: ['vendor'],
+				operation: ['updateConnections'],
+			},
+		},
+		default: '',
+		placeholder: 'ID or array of IDs',
+		description: 'A single control ID or an array of IDs to connect',
+	},
+	{
+		displayName: 'Risk IDs',
+		name: 'riskIds',
+		type: 'string',
+		displayOptions: {
+			show: {
+				resource: ['vendor'],
+				operation: ['updateConnections'],
+			},
+		},
+		default: '',
+		placeholder: 'ID or array of IDs',
+		description: 'A single risk ID or an array of IDs to connect',
+	},
+	{
+		displayName: 'Asset IDs',
+		name: 'assetIds',
+		type: 'string',
+		displayOptions: {
+			show: {
+				resource: ['vendor'],
+				operation: ['updateConnections'],
+			},
+		},
+		default: '',
+		placeholder: 'ID or array of IDs',
+		description: 'A single asset ID or an array of IDs to connect',
+	},
+	{
+		displayName: 'Business Process IDs',
+		name: 'businessProcessIds',
+		type: 'string',
+		displayOptions: {
+			show: {
+				resource: ['vendor'],
+				operation: ['updateConnections'],
+			},
+		},
+		default: '',
+		placeholder: 'ID or array of IDs',
+		description: 'A single business process ID or an array of IDs to connect',
+	},
+	{
+		displayName: 'Finding IDs',
+		name: 'findingIds',
+		type: 'string',
+		displayOptions: {
+			show: {
+				resource: ['vendor'],
+				operation: ['updateConnections'],
+			},
+		},
+		default: '',
+		placeholder: 'ID or array of IDs',
+		description: 'A single finding ID or an array of IDs to connect',
 	},
 ];

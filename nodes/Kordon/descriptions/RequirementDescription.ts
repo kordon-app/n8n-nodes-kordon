@@ -263,6 +263,132 @@ export const requirementOperations: INodeProperties = {
 				},
 			},
 		},
+		{
+			name: 'Update Connections',
+			value: 'updateConnections',
+			description: 'Update connections between a requirement and other objects (controls, risks, findings)',
+			action: 'Update requirement connections',
+			routing: {
+				send: {
+					preSend: [
+						async function (this, requestOptions) {
+							const requirementId = this.getNodeParameter('requirementId') as string;
+							const replaceExisting = this.getNodeParameter('replaceExisting', false) as boolean;
+
+							// Get connection IDs from parameters
+							// Accepts: single ID string, array of IDs, or empty
+							const getConnectionIds = (paramName: string): string[] => {
+								try {
+									const value = this.getNodeParameter(paramName, '');
+									this.logger.info(`[${paramName}] Raw value type: ${typeof value}, isArray: ${Array.isArray(value)}, value: ${JSON.stringify(value)}`);
+									if (!value) return [];
+									if (Array.isArray(value)) {
+										// Flatten in case n8n wraps array in another array [[...]]
+										const flattened = value.flat();
+										const result = flattened.map((v: unknown) => String(v).trim()).filter((v: string) => v);
+										this.logger.info(`[${paramName}] Processed array result: ${JSON.stringify(result)}`);
+										return result;
+									}
+									if (typeof value === 'string' && value.trim()) {
+										// Single ID string
+										return [value.trim()];
+									}
+									return [];
+								} catch {
+									return [];
+								}
+							};
+
+							const newControlIds = getConnectionIds('controlIds');
+							const newRiskIds = getConnectionIds('riskIds');
+							const newFindingIds = getConnectionIds('findingIds');
+
+							// Check if any connections were provided
+							const hasControls = newControlIds.length > 0;
+							const hasRisks = newRiskIds.length > 0;
+							const hasFindings = newFindingIds.length > 0;
+
+							const connections: { [key: string]: string[] } = {};
+
+							if (replaceExisting) {
+								// Replace mode: just use the provided IDs directly
+								if (hasControls) connections.control_ids = newControlIds;
+								if (hasRisks) connections.risk_ids = newRiskIds;
+								if (hasFindings) connections.finding_ids = newFindingIds;
+							} else {
+								// Merge mode: fetch existing connections and merge with new ones
+								const credentials = await this.getCredentials('kordonApi');
+								const baseUrl = credentials.domain as string;
+								const apiKey = credentials.apiKey as string;
+
+								// Fetch current requirement to get existing connections
+								const response = await this.helpers.httpRequest({
+									method: 'GET',
+									url: `${baseUrl}/api/v1/requirements/${requirementId}`,
+									headers: {
+										'Authorization': `Bearer ${apiKey}`,
+										'Accept': 'application/json',
+									},
+									json: true,
+								});
+
+								const existingRequirement = response.data;
+
+								// Helper to extract IDs from existing connections
+								// eslint-disable-next-line @typescript-eslint/no-explicit-any
+								const extractIds = (items: any[] | undefined): string[] => {
+									if (!items || !Array.isArray(items)) return [];
+									// eslint-disable-next-line @typescript-eslint/no-explicit-any
+									return items.map((item: any) => item.id).filter((id: string) => id);
+								};
+
+								// Merge existing with new (deduplicated)
+								const mergeIds = (existing: string[], newIds: string[]): string[] => {
+									return [...new Set([...existing, ...newIds])];
+								};
+
+								// Only include connection types that user provided input for
+								if (hasControls) {
+									connections.control_ids = mergeIds(extractIds(existingRequirement.controls), newControlIds);
+								}
+								if (hasRisks) {
+									connections.risk_ids = mergeIds(extractIds(existingRequirement.risks), newRiskIds);
+								}
+								if (hasFindings) {
+									connections.finding_ids = mergeIds(extractIds(existingRequirement.findings), newFindingIds);
+								}
+							}
+
+							requestOptions.body = { connections };
+
+							// Log request details for debugging
+							this.logger.info('=== Kordon API Update Requirement Connections Request ===');
+							this.logger.info('URL: ' + requestOptions.url);
+							this.logger.info('Method: ' + requestOptions.method);
+							this.logger.info('Replace Existing: ' + replaceExisting);
+							this.logger.info('Body: ' + JSON.stringify(requestOptions.body));
+							this.logger.info('==========================================================');
+
+							return requestOptions;
+						},
+					],
+				},
+				request: {
+					method: 'PATCH',
+					url: '=/requirements/{{$parameter.requirementId}}/connections',
+				},
+				output: {
+					postReceive: [
+						{
+							type: 'rootProperty',
+							properties: {
+								property: 'data',
+							},
+						},
+					],
+				},
+			},
+		},
 	],
 	default: 'getMany',
 };
@@ -617,5 +743,79 @@ export const requirementFields: INodeProperties[] = [
 				description: 'Filter by label IDs. Use "none" for items without labels.',
 			},
 		],
+	},
+
+	// ------------------------
+	// Requirement: Update Connections - Fields
+	// ------------------------
+	{
+		displayName: 'Requirement ID',
+		name: 'requirementId',
+		type: 'string',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['requirement'],
+				operation: ['updateConnections'],
+			},
+		},
+		default: '',
+		placeholder: 'e.g., 550e8400-e29b-41d4-a716-446655440000',
+		description: 'The ID of the requirement to update connections for',
+	},
+	{
+		displayName: 'Replace Existing Connections',
+		name: 'replaceExisting',
+		type: 'boolean',
+		displayOptions: {
+			show: {
+				resource: ['requirement'],
+				operation: ['updateConnections'],
+			},
+		},
+		default: false,
+		description: 'Whether to replace all existing connections with the provided ones. If false (default), new connections will be added to existing ones.',
+	},
+	{
+		displayName: 'Control IDs',
+		name: 'controlIds',
+		type: 'string',
+		displayOptions: {
+			show: {
+				resource: ['requirement'],
+				operation: ['updateConnections'],
+			},
+		},
+		default: '',
+		placeholder: 'ID or array of IDs',
+		description: 'A single control ID or an array of IDs to connect',
+	},
+	{
+		displayName: 'Risk IDs',
+		name: 'riskIds',
+		type: 'string',
+		displayOptions: {
+			show: {
+				resource: ['requirement'],
+				operation: ['updateConnections'],
+			},
+		},
+		default: '',
+		placeholder: 'ID or array of IDs',
+		description: 'A single risk ID or an array of IDs to connect',
+	},
+	{
+		displayName: 'Finding IDs',
+		name: 'findingIds',
+		type: 'string',
+		displayOptions: {
+			show: {
+				resource: ['requirement'],
+				operation: ['updateConnections'],
+			},
+		},
+		default: '',
+		placeholder: 'ID or array of IDs',
+		description: 'A single finding ID or an array of IDs to connect',
 	},
 ];

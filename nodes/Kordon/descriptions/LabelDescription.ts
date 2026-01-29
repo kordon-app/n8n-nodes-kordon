@@ -254,7 +254,7 @@ export const labelFields: INodeProperties[] = [
 			{
 				displayName: 'Color',
 				name: 'color',
-				type: 'string',
+				type: 'color',
 				default: '',
 				placeholder: '#FF5733',
 				description: 'Hex color code for the label (e.g., #FFC0CB, #008080)',
@@ -303,7 +303,7 @@ export const labelFields: INodeProperties[] = [
 			{
 				displayName: 'Color',
 				name: 'color',
-				type: 'string',
+				type: 'color',
 				default: '',
 				placeholder: '#FF5733',
 				description: 'Hex color code for the label (e.g., #FFC0CB, #008080)',

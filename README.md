@@ -63,4 +63,4 @@ For more details, see the [Kordon API Authentication documentation](https://kord
 
 ## License
 
-[MIT](LICENSE.md)
+[MIT](LICENSE)

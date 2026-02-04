@@ -13,7 +13,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://gitlab.com/kordon-security/n8n-nodes-kordon.git"
+        "url": "https://github.com/kordon-app/n8n-nodes-kordon.git"
     },
     "scripts": {
         "build": "n8n-node build",

@@ -2,6 +2,7 @@ import { NodeConnectionTypes, type INodeType, type INodeTypeDescription } from '
 import { assetOperations, assetFields } from './descriptions/AssetDescription';
 import { businessProcessOperations, businessProcessFields } from './descriptions/BusinessProcessDescription';
 import { controlOperations, controlFields } from './descriptions/ControlDescription';
+import { customFieldOperations, customFieldFields } from './descriptions/CustomFieldDescription';
 import { findingOperations, findingFields } from './descriptions/FindingDescription';
 import { frameworkOperations, frameworkFields } from './descriptions/FrameworkDescription';
 import { labelOperations, labelFields } from './descriptions/LabelDescription';
@@ -57,67 +58,73 @@ export class Kordon implements INodeType {
 				noDataExpression: true,
 				options: [
 					{
-						name: 'Asset',
-						value: 'asset',
-					},
-					{
-						name: 'Business Process',
-						value: 'business_process',
-					},
-					{
-						name: 'Control',
-						value: 'control',
-					},
-					{
-						name: 'Finding',
-						value: 'finding',
-					},
-					{
-						name: 'Framework',
-						value: 'regulation',
-					},
-					{
-						name: 'Label',
-						value: 'label',
-					},
-					{
-						name: 'Requirement',
-						value: 'requirement',
-					},
-					{
-						name: 'Risk',
-						value: 'risk',
-					},
-					{
-						name: 'Task',
-						value: 'task',
-					},
-					{
-						name: 'User',
-						value: 'user',
-					},
-					{
-						name: 'User Group',
-						value: 'user_group',
-					},
-					{
-						name: 'Vendor',
-						value: 'vendor',
-					},
-				],
-				default: 'user',
-			},
+					name: 'Framework',
+					value: 'regulation',
+				},
+				{
+					name: 'Requirement',
+					value: 'requirement',
+				},
+				{
+					name: 'Control',
+					value: 'control',
+				},
+				{
+					name: 'Risk',
+					value: 'risk',
+				},
+				{
+					name: 'Vendor',
+					value: 'vendor',
+				},
+				{
+					name: 'Asset',
+					value: 'asset',
+				},
+				{
+					name: 'Business Process',
+					value: 'business_process',
+				},
+				{
+					name: 'Finding',
+					value: 'finding',
+				},
+				{
+					name: 'Task',
+					value: 'task',
+				},
+				{
+					name: 'Custom Field',
+					value: 'custom_field',
+				},
+				{
+					name: 'Label',
+					value: 'label',
+				},
+				{
+					name: 'User',
+					value: 'user',
+				},
+				{
+					name: 'User Group',
+					value: 'user_group',
+				},
+			],
+			default: 'user',
+		},
 
-			// ------------------------
-		// Asset operations and fields
-		assetOperations,
-		...assetFields,
+		// ------------------------
+	// Asset operations and fields
+	assetOperations,
+	...assetFields,
 
-		businessProcessOperations,
-		...businessProcessFields,
+	businessProcessOperations,
+	...businessProcessFields,
 
-		controlOperations,
-		...controlFields,
+	controlOperations,
+	...controlFields,
+		customFieldOperations,
+		...customFieldFields,
 
 		vendorOperations,
 		...vendorFields,

@@ -144,6 +144,18 @@ export const requirementOperations: INodeProperties = {
 								}
 							}
 
+							// Handle custom fields
+							if (additionalFields.customFields !== undefined) {
+								const customFields = additionalFields.customFields.field;
+								if (Array.isArray(customFields)) {
+									for (const field of customFields) {
+										if (field.key && field.value !== undefined) {
+											requirement[field.key] = field.value;
+										}
+									}
+								}
+							}
+
 							requestOptions.body = {
 								requirement: requirement,
 							};
@@ -191,6 +203,15 @@ export const requirementOperations: INodeProperties = {
 										requirement['label_ids'] = labels;
 									} else {
 										requirement['label_ids'] = [labels];
+									}
+								} else if (key === 'customFields') {
+									const customFields = updateFields[key].field;
+									if (Array.isArray(customFields)) {
+										for (const field of customFields) {
+											if (field.key && field.value !== undefined) {
+												requirement[field.key] = field.value;
+											}
+										}
 									}
 								} else if (key === 'frameworkId') {
 									// Convert frameworkId to regulation_ids array
@@ -508,6 +529,40 @@ export const requirementFields: INodeProperties[] = [
 				default: '',
 				description: 'Number of the paragraph',
 			},
+			{
+				displayName: 'Custom Fields',
+				name: 'customFields',
+				type: 'fixedCollection',
+				typeOptions: {
+					multipleValues: true,
+				},
+				default: {},
+				placeholder: 'Add Custom Field',
+				description: 'Custom fields to set on the requirement',
+				options: [
+					{
+						displayName: 'Field',
+						name: 'field',
+						values: [
+							{
+								displayName: 'Field Key',
+								name: 'key',
+								type: 'string',
+								default: '',
+								placeholder: 'e.g., my_custom_field',
+								description: 'The key/name of the custom field',
+							},
+							{
+								displayName: 'Field Value',
+								name: 'value',
+								type: 'string',
+								default: '',
+								description: 'The value for this custom field',
+							},
+						],
+					},
+				],
+			},
 		],
 	},
 
@@ -625,6 +680,40 @@ export const requirementFields: INodeProperties[] = [
 				type: 'string',
 				default: '',
 				description: 'The title of the requirement',
+			},
+			{
+				displayName: 'Custom Fields',
+				name: 'customFields',
+				type: 'fixedCollection',
+				typeOptions: {
+					multipleValues: true,
+				},
+				default: {},
+				placeholder: 'Add Custom Field',
+				description: 'Custom fields to set on the requirement',
+				options: [
+					{
+						displayName: 'Field',
+						name: 'field',
+						values: [
+							{
+								displayName: 'Field Key',
+								name: 'key',
+								type: 'string',
+								default: '',
+								placeholder: 'e.g., my_custom_field',
+								description: 'The key/name of the custom field',
+							},
+							{
+								displayName: 'Field Value',
+								name: 'value',
+								type: 'string',
+								default: '',
+								description: 'The value for this custom field',
+							},
+						],
+					},
+				],
 			},
 		],
 	},

@@ -151,6 +151,18 @@ export const assetOperations: INodeProperties = {
 								}
 							}
 
+							// Handle custom fields
+							if (additionalFields.customFields !== undefined) {
+								const customFields = additionalFields.customFields.field;
+								if (Array.isArray(customFields)) {
+									for (const field of customFields) {
+										if (field.key && field.value !== undefined) {
+											asset[field.key] = field.value;
+										}
+									}
+								}
+							}
+
 							requestOptions.body = { asset: asset };
 
 							return requestOptions;
@@ -197,6 +209,15 @@ export const assetOperations: INodeProperties = {
 										asset['label_ids'] = labels;
 									} else {
 										asset['label_ids'] = [labels];
+									}
+								} else if (key === 'customFields') {
+									const customFields = updateFields[key].field;
+									if (Array.isArray(customFields)) {
+										for (const field of customFields) {
+											if (field.key && field.value !== undefined) {
+												asset[field.key] = field.value;
+											}
+										}
 									}
 								} else if (key === 'managerId') {
 									asset['manager_id'] = updateFields[key];
@@ -693,6 +714,40 @@ export const assetFields: INodeProperties[] = [
 					multipleValues: true,
 				},
 			},
+			{
+				displayName: 'Custom Fields',
+				name: 'customFields',
+				type: 'fixedCollection',
+				typeOptions: {
+					multipleValues: true,
+				},
+				default: {},
+				placeholder: 'Add Custom Field',
+				description: 'Custom fields to set on the asset',
+				options: [
+					{
+						displayName: 'Field',
+						name: 'field',
+						values: [
+							{
+								displayName: 'Field Key',
+								name: 'key',
+								type: 'string',
+								default: '',
+								placeholder: 'e.g., my_custom_field',
+								description: 'The key/name of the custom field',
+							},
+							{
+								displayName: 'Field Value',
+								name: 'value',
+								type: 'string',
+								default: '',
+								description: 'The value for this custom field',
+							},
+						],
+					},
+				],
+			},
 		],
 	},
 
@@ -806,6 +861,40 @@ export const assetFields: INodeProperties[] = [
 				type: 'string',
 				default: '',
 				description: 'The title of the asset',
+			},
+			{
+				displayName: 'Custom Fields',
+				name: 'customFields',
+				type: 'fixedCollection',
+				typeOptions: {
+					multipleValues: true,
+				},
+				default: {},
+				placeholder: 'Add Custom Field',
+				description: 'Custom fields to set on the asset',
+				options: [
+					{
+						displayName: 'Field',
+						name: 'field',
+						values: [
+							{
+								displayName: 'Field Key',
+								name: 'key',
+								type: 'string',
+								default: '',
+								placeholder: 'e.g., my_custom_field',
+								description: 'The key/name of the custom field',
+							},
+							{
+								displayName: 'Field Value',
+								name: 'value',
+								type: 'string',
+								default: '',
+								description: 'The value for this custom field',
+							},
+						],
+					},
+				],
 			},
 		],
 	},

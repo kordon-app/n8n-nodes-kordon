@@ -59,6 +59,18 @@ export const businessProcessOperations: INodeProperties = {
 								}
 							}
 
+							// Handle custom fields
+							if (additionalFields.customFields !== undefined) {
+								const customFields = additionalFields.customFields.field;
+								if (Array.isArray(customFields)) {
+									for (const field of customFields) {
+										if (field.key && field.value !== undefined) {
+											businessProcess[field.key] = field.value;
+										}
+									}
+								}
+							}
+
 							requestOptions.body = { business_process: businessProcess };
 
 							return requestOptions;
@@ -172,6 +184,15 @@ export const businessProcessOperations: INodeProperties = {
 										businessProcess['label_ids'] = labels;
 									} else {
 										businessProcess['label_ids'] = [labels];
+									}
+								} else if (key === 'customFields') {
+									const customFields = updateFields[key].field;
+									if (Array.isArray(customFields)) {
+										for (const field of customFields) {
+											if (field.key && field.value !== undefined) {
+												businessProcess[field.key] = field.value;
+											}
+										}
 									}
 								} else if (key === 'ownerId') {
 									businessProcess['owner_id'] = updateFields[key];
@@ -584,6 +605,40 @@ export const businessProcessFields: INodeProperties[] = [
 				default: 0,
 				description: 'The monetary value of the business process',
 			},
+			{
+				displayName: 'Custom Fields',
+				name: 'customFields',
+				type: 'fixedCollection',
+				typeOptions: {
+					multipleValues: true,
+				},
+				default: {},
+				placeholder: 'Add Custom Field',
+				description: 'Custom fields to set on the business process',
+				options: [
+					{
+						displayName: 'Field',
+						name: 'field',
+						values: [
+							{
+								displayName: 'Field Key',
+								name: 'key',
+								type: 'string',
+								default: '',
+								placeholder: 'e.g., my_custom_field',
+								description: 'The key/name of the custom field',
+							},
+							{
+								displayName: 'Field Value',
+								name: 'value',
+								type: 'string',
+								default: '',
+								description: 'The value for this custom field',
+							},
+						],
+					},
+				],
+			},
 		],
 	},
 
@@ -713,6 +768,40 @@ export const businessProcessFields: INodeProperties[] = [
 				type: 'string',
 				default: '',
 				description: 'The title of the business process',
+			},
+			{
+				displayName: 'Custom Fields',
+				name: 'customFields',
+				type: 'fixedCollection',
+				typeOptions: {
+					multipleValues: true,
+				},
+				default: {},
+				placeholder: 'Add Custom Field',
+				description: 'Custom fields to set on the business process',
+				options: [
+					{
+						displayName: 'Field',
+						name: 'field',
+						values: [
+							{
+								displayName: 'Field Key',
+								name: 'key',
+								type: 'string',
+								default: '',
+								placeholder: 'e.g., my_custom_field',
+								description: 'The key/name of the custom field',
+							},
+							{
+								displayName: 'Field Value',
+								name: 'value',
+								type: 'string',
+								default: '',
+								description: 'The value for this custom field',
+							},
+						],
+					},
+				],
 			},
 		],
 	},

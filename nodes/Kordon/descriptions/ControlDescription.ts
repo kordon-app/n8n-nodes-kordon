@@ -124,6 +124,18 @@ export const controlOperations: INodeProperties = {
 								}
 							}
 
+							// Handle custom fields
+							if (additionalFields.customFields !== undefined) {
+								const customFields = additionalFields.customFields.field;
+								if (Array.isArray(customFields)) {
+									for (const field of customFields) {
+										if (field.key && field.value !== undefined) {
+											control[field.key] = field.value;
+										}
+									}
+								}
+							}
+
 							requestOptions.body = { control: control };
 
 							return requestOptions;
@@ -170,6 +182,15 @@ export const controlOperations: INodeProperties = {
 										control['label_ids'] = labels;
 									} else {
 										control['label_ids'] = [labels];
+									}
+								} else if (key === 'customFields') {
+									const customFields = updateFields[key].field;
+									if (Array.isArray(customFields)) {
+										for (const field of customFields) {
+											if (field.key && field.value !== undefined) {
+												control[field.key] = field.value;
+											}
+										}
 									}
 								} else if (key === 'ownerId') {
 									control['owner_id'] = updateFields[key];
@@ -610,6 +631,40 @@ export const controlFields: INodeProperties[] = [
 					multipleValues: true,
 				},
 			},
+			{
+				displayName: 'Custom Fields',
+				name: 'customFields',
+				type: 'fixedCollection',
+				typeOptions: {
+					multipleValues: true,
+				},
+				default: {},
+				placeholder: 'Add Custom Field',
+				description: 'Custom fields to set on the control',
+				options: [
+					{
+						displayName: 'Field',
+						name: 'field',
+						values: [
+							{
+								displayName: 'Field Key',
+								name: 'key',
+								type: 'string',
+								default: '',
+								placeholder: 'e.g., my_custom_field',
+								description: 'The key/name of the custom field',
+							},
+							{
+								displayName: 'Field Value',
+								name: 'value',
+								type: 'string',
+								default: '',
+								description: 'The value for this custom field',
+							},
+						],
+					},
+				],
+			},
 		],
 	},
 
@@ -702,6 +757,40 @@ export const controlFields: INodeProperties[] = [
 				type: 'string',
 				default: '',
 				description: 'The title of the control',
+			},
+			{
+				displayName: 'Custom Fields',
+				name: 'customFields',
+				type: 'fixedCollection',
+				typeOptions: {
+					multipleValues: true,
+				},
+				default: {},
+				placeholder: 'Add Custom Field',
+				description: 'Custom fields to set on the control',
+				options: [
+					{
+						displayName: 'Field',
+						name: 'field',
+						values: [
+							{
+								displayName: 'Field Key',
+								name: 'key',
+								type: 'string',
+								default: '',
+								placeholder: 'e.g., my_custom_field',
+								description: 'The key/name of the custom field',
+							},
+							{
+								displayName: 'Field Value',
+								name: 'value',
+								type: 'string',
+								default: '',
+								description: 'The value for this custom field',
+							},
+						],
+					},
+				],
 			},
 		],
 	},

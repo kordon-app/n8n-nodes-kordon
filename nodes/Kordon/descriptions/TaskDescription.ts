@@ -121,6 +121,9 @@ export const taskOperations: INodeProperties = {
 							if (additionalFields.duration !== undefined && additionalFields.duration !== '') {
 								task.duration = additionalFields.duration;
 							}
+							if (additionalFields.connectedItemId !== undefined && additionalFields.connectedItemId !== '') {
+								task.taskable_id = additionalFields.connectedItemId;
+							}
 
 							// Handle labels - convert to array if needed
 							if (additionalFields.labels !== undefined && additionalFields.labels !== '') {
@@ -205,6 +208,8 @@ export const taskOperations: INodeProperties = {
 									task['due_at'] = updateFields[key];
 								} else if (key === 'needsEvidence') {
 									task['needs_evidence'] = updateFields[key];
+								} else if (key === 'connectedItemId') {
+									task['taskable_id'] = updateFields[key];
 								} else {
 									task[key] = updateFields[key];
 								}
@@ -388,32 +393,11 @@ export const taskFields: INodeProperties[] = [
 		},
 		options: [
 			{
-				displayName: 'Description',
-				name: 'description',
+				displayName: 'Connected Item ID',
+				name: 'connectedItemId',
 				type: 'string',
 				default: '',
-				description: 'Detailed description of the task',
-			},
-			{
-				displayName: 'Needs Evidence',
-				name: 'needsEvidence',
-				type: 'boolean',
-				default: false,
-				description: 'Whether the task requires evidence to be completed',
-			},
-			{
-				displayName: 'Duration',
-				name: 'duration',
-				type: 'number',
-				default: 0,
-				description: 'Estimated duration in minutes',
-			},
-			{
-				displayName: 'Labels',
-				name: 'labels',
-				type: 'string',
-				default: '',
-				description: 'Comma-separated list of label IDs',
+				description: 'The ID of the item to connect this task to',
 			},
 			{
 				displayName: 'Custom Fields',
@@ -448,6 +432,34 @@ export const taskFields: INodeProperties[] = [
 						],
 					},
 				],
+			},
+			{
+				displayName: 'Description',
+				name: 'description',
+				type: 'string',
+				default: '',
+				description: 'Detailed description of the task',
+			},
+			{
+				displayName: 'Duration',
+				name: 'duration',
+				type: 'number',
+				default: 0,
+				description: 'Estimated duration in minutes',
+			},
+			{
+				displayName: 'Labels',
+				name: 'labels',
+				type: 'string',
+				default: '',
+				description: 'Comma-separated list of label IDs',
+			},
+			{
+				displayName: 'Needs Evidence',
+				name: 'needsEvidence',
+				type: 'boolean',
+				default: false,
+				description: 'Whether the task requires evidence to be completed',
 			},
 		],
 	},
@@ -489,6 +501,47 @@ export const taskFields: INodeProperties[] = [
 				type: 'string',
 				default: '',
 				description: 'The ID of the user assigned to the task',
+			},
+			{
+				displayName: 'Connected Item ID',
+				name: 'connectedItemId',
+				type: 'string',
+				default: '',
+				description: 'The ID of the item to connect this task to',
+			},
+			{
+				displayName: 'Custom Fields',
+				name: 'customFields',
+				type: 'fixedCollection',
+				typeOptions: {
+					multipleValues: true,
+				},
+				default: {},
+				placeholder: 'Add Custom Field',
+				description: 'Custom fields to set on the task',
+				options: [
+					{
+						displayName: 'Field',
+						name: 'field',
+						values: [
+							{
+								displayName: 'Field Key',
+								name: 'key',
+								type: 'string',
+								default: '',
+								placeholder: 'e.g., my_custom_field',
+								description: 'The key/name of the custom field',
+							},
+							{
+								displayName: 'Field Value',
+								name: 'value',
+								type: 'string',
+								default: '',
+								description: 'The value for this custom field',
+							},
+						],
+					},
+				],
 			},
 			{
 				displayName: 'Description',
@@ -588,40 +641,6 @@ export const taskFields: INodeProperties[] = [
 				type: 'string',
 				default: '',
 				description: 'The title of the task',
-			},
-			{
-				displayName: 'Custom Fields',
-				name: 'customFields',
-				type: 'fixedCollection',
-				typeOptions: {
-					multipleValues: true,
-				},
-				default: {},
-				placeholder: 'Add Custom Field',
-				description: 'Custom fields to set on the task',
-				options: [
-					{
-						displayName: 'Field',
-						name: 'field',
-						values: [
-							{
-								displayName: 'Field Key',
-								name: 'key',
-								type: 'string',
-								default: '',
-								placeholder: 'e.g., my_custom_field',
-								description: 'The key/name of the custom field',
-							},
-							{
-								displayName: 'Field Value',
-								name: 'value',
-								type: 'string',
-								default: '',
-								description: 'The value for this custom field',
-							},
-						],
-					},
-				],
 			},
 		],
 	},

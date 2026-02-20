@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [Unreleased]
+
+> 20 February 2026
+
+- Add Connected Item ID field for Task Create and Update operations, mapping to `taskable_id`.
+
 #### [v1.0.11](https://gitlab.com/kordon-security/n8n-nodes-kordon/compare/v1.0.9...v1.0.11)
 
 > 9 February 2026

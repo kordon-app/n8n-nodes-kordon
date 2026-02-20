@@ -23,6 +23,7 @@ This node supports the following resources and operations:
 | Asset | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Business Process | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Control | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Custom Field | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Finding | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Framework | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Label | ✅ | ✅ | ✅ | ✅ | ✅ |
@@ -36,6 +37,10 @@ This node supports the following resources and operations:
 All **Get Many** operations support:
 - **Return All**: Fetch all results using automatic pagination
 - **Filtering**: Resource-specific filters (state, owner, labels, etc.)
+
+Task operations also support:
+- **Connected Item ID** on create and update (mapped to `taskable_id`)
+- **Custom Fields** on create and update
 
 ## Credentials
 

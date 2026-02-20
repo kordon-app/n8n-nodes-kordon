@@ -232,22 +232,6 @@ export const customFieldFields: INodeProperties[] = [
 		},
 		options: [
 			{
-				name: 'Requirement',
-				value: 'Requirement',
-			},
-			{
-				name: 'Control',
-				value: 'Control',
-			},
-			{
-				name: 'Risk',
-				value: 'Risk',
-			},
-			{
-				name: 'Vendor',
-				value: 'Vendor',
-			},
-			{
 				name: 'Asset',
 				value: 'Asset',
 			},
@@ -256,8 +240,24 @@ export const customFieldFields: INodeProperties[] = [
 				value: 'BusinessProcess',
 			},
 			{
+				name: 'Control',
+				value: 'Control',
+			},
+			{
+				name: 'Requirement',
+				value: 'Requirement',
+			},
+			{
+				name: 'Risk',
+				value: 'Risk',
+			},
+			{
 				name: 'Task',
 				value: 'Task',
+			},
+			{
+				name: 'Vendor',
+				value: 'Vendor',
 			},
 		],
 		default: 'Requirement',
@@ -362,6 +362,51 @@ export const customFieldFields: INodeProperties[] = [
 		},
 		options: [
 			{
+				displayName: 'Attribute Of',
+				name: 'attributeOf',
+				type: 'options',
+				options: [
+					{
+						name: 'Asset',
+						value: 'Asset',
+					},
+					{
+						name: 'Business Process',
+						value: 'BusinessProcess',
+					},
+					{
+						name: 'Control',
+						value: 'Control',
+					},
+					{
+						name: 'Requirement',
+						value: 'Requirement',
+					},
+					{
+						name: 'Risk',
+						value: 'Risk',
+					},
+					{
+						name: 'Task',
+						value: 'Task',
+					},
+					{
+						name: 'Vendor',
+						value: 'Vendor',
+					},
+				],
+				default: 'Requirement',
+				description: 'The resource type this custom field can be used with',
+			},
+			{
+				displayName: 'Description',
+				name: 'description',
+				type: 'string',
+				default: '',
+				placeholder: 'e.g., Track the compliance status of requirements',
+				description: 'Optional description of the field\'s purpose',
+			},
+			{
 				displayName: 'Key',
 				name: 'key',
 				type: 'string',
@@ -390,51 +435,6 @@ export const customFieldFields: INodeProperties[] = [
 				],
 				default: 'string',
 				description: 'The data type of the custom field',
-			},
-			{
-				displayName: 'Attribute Of',
-				name: 'attributeOf',
-				type: 'options',
-				options: [
-					{
-						name: 'Requirement',
-						value: 'Requirement',
-					},
-					{
-						name: 'Control',
-						value: 'Control',
-					},
-					{
-						name: 'Risk',
-						value: 'Risk',
-					},
-					{
-						name: 'Vendor',
-						value: 'Vendor',
-					},
-					{
-						name: 'Asset',
-						value: 'Asset',
-					},
-					{
-						name: 'Business Process',
-						value: 'BusinessProcess',
-					},
-					{
-						name: 'Task',
-						value: 'Task',
-					},
-				],
-				default: 'Requirement',
-				description: 'The resource type this custom field can be used with',
-			},
-			{
-				displayName: 'Description',
-				name: 'description',
-				type: 'string',
-				default: '',
-				placeholder: 'e.g., Track the compliance status of requirements',
-				description: 'Optional description of the field\'s purpose',
 			},
 			{
 				displayName: 'Visible in UI',

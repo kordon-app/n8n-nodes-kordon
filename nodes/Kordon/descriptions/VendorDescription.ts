@@ -705,6 +705,40 @@ export const vendorFields: INodeProperties[] = [
 				description: 'The criticality of the vendor',
 			},
 			{
+				displayName: 'Custom Fields',
+				name: 'customFields',
+				type: 'fixedCollection',
+				typeOptions: {
+					multipleValues: true,
+				},
+				default: {},
+				placeholder: 'Add Custom Field',
+				description: 'Custom fields to set on the vendor',
+				options: [
+					{
+						displayName: 'Field',
+						name: 'field',
+						values: [
+							{
+								displayName: 'Field Key',
+								name: 'key',
+								type: 'string',
+								default: '',
+								placeholder: 'e.g., my_custom_field',
+								description: 'The key/name of the custom field',
+							},
+							{
+								displayName: 'Field Value',
+								name: 'value',
+								type: 'string',
+								default: '',
+								description: 'The value for this custom field',
+							},
+						],
+					},
+				],
+			},
+			{
 				displayName: 'Description',
 				name: 'description',
 				type: 'string',
@@ -753,40 +787,6 @@ export const vendorFields: INodeProperties[] = [
 				type: 'string',
 				default: '',
 				description: 'Website URL',
-			},
-			{
-				displayName: 'Custom Fields',
-				name: 'customFields',
-				type: 'fixedCollection',
-				typeOptions: {
-					multipleValues: true,
-				},
-				default: {},
-				placeholder: 'Add Custom Field',
-				description: 'Custom fields to set on the vendor',
-				options: [
-					{
-						displayName: 'Field',
-						name: 'field',
-						values: [
-							{
-								displayName: 'Field Key',
-								name: 'key',
-								type: 'string',
-								default: '',
-								placeholder: 'e.g., my_custom_field',
-								description: 'The key/name of the custom field',
-							},
-							{
-								displayName: 'Field Value',
-								name: 'value',
-								type: 'string',
-								default: '',
-								description: 'The value for this custom field',
-							},
-						],
-					},
-				],
 			},
 		],
 	},
@@ -870,6 +870,40 @@ export const vendorFields: INodeProperties[] = [
 				],
 				default: 'low',
 				description: 'The criticality of the vendor',
+			},
+			{
+				displayName: 'Custom Fields',
+				name: 'customFields',
+				type: 'fixedCollection',
+				typeOptions: {
+					multipleValues: true,
+				},
+				default: {},
+				placeholder: 'Add Custom Field',
+				description: 'Custom fields to set on the vendor',
+				options: [
+					{
+						displayName: 'Field',
+						name: 'field',
+						values: [
+							{
+								displayName: 'Field Key',
+								name: 'key',
+								type: 'string',
+								default: '',
+								placeholder: 'e.g., my_custom_field',
+								description: 'The key/name of the custom field',
+							},
+							{
+								displayName: 'Field Value',
+								name: 'value',
+								type: 'string',
+								default: '',
+								description: 'The value for this custom field',
+							},
+						],
+					},
+				],
 			},
 			{
 				displayName: 'Description',
@@ -966,40 +1000,6 @@ export const vendorFields: INodeProperties[] = [
 				type: 'string',
 				default: '',
 				description: 'Website URL',
-			},
-			{
-				displayName: 'Custom Fields',
-				name: 'customFields',
-				type: 'fixedCollection',
-				typeOptions: {
-					multipleValues: true,
-				},
-				default: {},
-				placeholder: 'Add Custom Field',
-				description: 'Custom fields to set on the vendor',
-				options: [
-					{
-						displayName: 'Field',
-						name: 'field',
-						values: [
-							{
-								displayName: 'Field Key',
-								name: 'key',
-								type: 'string',
-								default: '',
-								placeholder: 'e.g., my_custom_field',
-								description: 'The key/name of the custom field',
-							},
-							{
-								displayName: 'Field Value',
-								name: 'value',
-								type: 'string',
-								default: '',
-								description: 'The value for this custom field',
-							},
-						],
-					},
-				],
 			},
 		],
 	},

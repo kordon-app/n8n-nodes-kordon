@@ -554,6 +554,40 @@ export const riskFields: INodeProperties[] = [
 		},
 		options: [
 			{
+				displayName: 'Custom Fields',
+				name: 'customFields',
+				type: 'fixedCollection',
+				typeOptions: {
+					multipleValues: true,
+				},
+				default: {},
+				placeholder: 'Add Custom Field',
+				description: 'Custom fields to set on the risk',
+				options: [
+					{
+						displayName: 'Field',
+						name: 'field',
+						values: [
+							{
+								displayName: 'Field Key',
+								name: 'key',
+								type: 'string',
+								default: '',
+								placeholder: 'e.g., my_custom_field',
+								description: 'The key/name of the custom field',
+							},
+							{
+								displayName: 'Field Value',
+								name: 'value',
+								type: 'string',
+								default: '',
+								description: 'The value for this custom field',
+							},
+						],
+					},
+				],
+			},
+			{
 				displayName: 'Description',
 				name: 'description',
 				type: 'string',
@@ -613,40 +647,6 @@ export const riskFields: INodeProperties[] = [
 				type: 'string',
 				default: '',
 				description: 'The title of the risk',
-			},
-			{
-				displayName: 'Custom Fields',
-				name: 'customFields',
-				type: 'fixedCollection',
-				typeOptions: {
-					multipleValues: true,
-				},
-				default: {},
-				placeholder: 'Add Custom Field',
-				description: 'Custom fields to set on the risk',
-				options: [
-					{
-						displayName: 'Field',
-						name: 'field',
-						values: [
-							{
-								displayName: 'Field Key',
-								name: 'key',
-								type: 'string',
-								default: '',
-								placeholder: 'e.g., my_custom_field',
-								description: 'The key/name of the custom field',
-							},
-							{
-								displayName: 'Field Value',
-								name: 'value',
-								type: 'string',
-								default: '',
-								description: 'The value for this custom field',
-							},
-						],
-					},
-				],
 			},
 		],
 	},

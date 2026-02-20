@@ -58,26 +58,6 @@ export class Kordon implements INodeType {
 				noDataExpression: true,
 				options: [
 					{
-					name: 'Framework',
-					value: 'regulation',
-				},
-				{
-					name: 'Requirement',
-					value: 'requirement',
-				},
-				{
-					name: 'Control',
-					value: 'control',
-				},
-				{
-					name: 'Risk',
-					value: 'risk',
-				},
-				{
-					name: 'Vendor',
-					value: 'vendor',
-				},
-				{
 					name: 'Asset',
 					value: 'asset',
 				},
@@ -86,20 +66,36 @@ export class Kordon implements INodeType {
 					value: 'business_process',
 				},
 				{
-					name: 'Finding',
-					value: 'finding',
-				},
-				{
-					name: 'Task',
-					value: 'task',
+					name: 'Control',
+					value: 'control',
 				},
 				{
 					name: 'Custom Field',
 					value: 'custom_field',
 				},
 				{
+					name: 'Finding',
+					value: 'finding',
+				},
+				{
+					name: 'Framework',
+					value: 'regulation',
+				},
+				{
 					name: 'Label',
 					value: 'label',
+				},
+				{
+					name: 'Requirement',
+					value: 'requirement',
+				},
+				{
+					name: 'Risk',
+					value: 'risk',
+				},
+				{
+					name: 'Task',
+					value: 'task',
 				},
 				{
 					name: 'User',
@@ -109,9 +105,13 @@ export class Kordon implements INodeType {
 					name: 'User Group',
 					value: 'user_group',
 				},
-			],
-			default: 'user',
-		},
+				{
+					name: 'Vendor',
+					value: 'vendor',
+				},
+				],
+				default: 'user',
+			},
 
 		// ------------------------
 	// Asset operations and fields

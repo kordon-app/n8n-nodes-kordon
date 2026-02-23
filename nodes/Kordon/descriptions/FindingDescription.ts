@@ -1,5 +1,5 @@
 import type { INodeProperties } from 'n8n-workflow';
-import { paginationRouting, handleArrayParameter } from '../shared/utils';
+import { paginationRouting, handleArrayParameter, createEnhancedError } from '../shared/utils';
 
 /**
  * Finding resource operations for Kordon node
@@ -25,9 +25,28 @@ export const findingOperations: INodeProperties = {
 				request: {
 					method: 'GET',
 					url: '=/findings/{{$parameter.findingId}}',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const findingId = this.getNodeParameter('findingId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'finding',
+										operation: 'get',
+										itemId: findingId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -68,6 +87,7 @@ export const findingOperations: INodeProperties = {
 				request: {
 					method: 'GET',
 					url: '/findings',
+					ignoreHttpStatusErrors: true,
 					returnFullResponse: true,
 					qs: {
 						'kind[]': '={{$parameter.options.kind}}',
@@ -80,6 +100,21 @@ export const findingOperations: INodeProperties = {
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'finding',
+										operation: 'getMany',
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -149,9 +184,26 @@ export const findingOperations: INodeProperties = {
 				request: {
 					method: 'POST',
 					url: '/findings',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'finding',
+										operation: 'create',
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -208,9 +260,28 @@ export const findingOperations: INodeProperties = {
 				request: {
 					method: 'PATCH',
 					url: '=/findings/{{$parameter.findingId}}',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const findingId = this.getNodeParameter('findingId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'finding',
+										operation: 'update',
+										itemId: findingId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -230,9 +301,28 @@ export const findingOperations: INodeProperties = {
 				request: {
 					method: 'DELETE',
 					url: '=/findings/{{$parameter.findingId}}',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const findingId = this.getNodeParameter('findingId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'finding',
+										operation: 'delete',
+										itemId: findingId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -368,9 +458,28 @@ export const findingOperations: INodeProperties = {
 				request: {
 					method: 'PATCH',
 					url: '=/findings/{{$parameter.findingId}}/connections',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const findingId = this.getNodeParameter('findingId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'finding',
+										operation: 'updateConnections',
+										itemId: findingId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {

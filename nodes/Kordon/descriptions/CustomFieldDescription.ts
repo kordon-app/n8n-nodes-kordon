@@ -1,5 +1,5 @@
 import type { INodeProperties } from 'n8n-workflow';
-import { paginationRouting } from '../shared/utils';
+import { paginationRouting, createEnhancedError } from '../shared/utils';
 
 export const customFieldOperations: INodeProperties = {
 	displayName: 'Operation',
@@ -21,9 +21,28 @@ export const customFieldOperations: INodeProperties = {
 				request: {
 					method: 'GET',
 					url: '=/custom_fields/{{$parameter.customFieldId}}',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const customFieldId = this.getNodeParameter('customFieldId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'custom_field',
+										operation: 'get',
+										itemId: customFieldId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -43,10 +62,26 @@ export const customFieldOperations: INodeProperties = {
 				request: {
 					method: 'GET',
 					url: '/custom_fields',
+					ignoreHttpStatusErrors: true,
 					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'custom_field',
+										operation: 'getMany',
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -99,9 +134,26 @@ export const customFieldOperations: INodeProperties = {
 				request: {
 					method: 'POST',
 					url: '/custom_fields',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'custom_field',
+										operation: 'create',
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -149,9 +201,28 @@ export const customFieldOperations: INodeProperties = {
 				request: {
 					method: 'PATCH',
 					url: '=/custom_fields/{{$parameter.customFieldId}}',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const customFieldId = this.getNodeParameter('customFieldId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'custom_field',
+										operation: 'update',
+										itemId: customFieldId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -171,6 +242,35 @@ export const customFieldOperations: INodeProperties = {
 				request: {
 					method: 'DELETE',
 					url: '=/custom_fields/{{$parameter.customFieldId}}',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
+				},
+				output: {
+					postReceive: [
+						async function (this, items, response) {
+							const customFieldId = this.getNodeParameter('customFieldId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'custom_field',
+										operation: 'delete',
+										itemId: customFieldId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
+						{
+							type: 'rootProperty',
+							properties: {
+								property: 'data',
+							},
+						},
+					],
 				},
 			},
 		},

@@ -1,5 +1,5 @@
 import type { INodeProperties } from 'n8n-workflow';
-import { paginationRouting, handleArrayParameter } from '../shared/utils';
+import { paginationRouting, handleArrayParameter, createEnhancedError } from '../shared/utils';
 
 /**
  * Task resource operations for Kordon node
@@ -25,9 +25,28 @@ export const taskOperations: INodeProperties = {
 				request: {
 					method: 'GET',
 					url: '=/tasks/{{$parameter.taskId}}',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const taskId = this.getNodeParameter('taskId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'task',
+										operation: 'get',
+										itemId: taskId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -65,6 +84,7 @@ export const taskOperations: INodeProperties = {
 				request: {
 					method: 'GET',
 					url: '/tasks',
+					ignoreHttpStatusErrors: true,
 					returnFullResponse: true,
 					qs: {
 						'kind[]': '={{$parameter.options.kind}}',
@@ -74,6 +94,21 @@ export const taskOperations: INodeProperties = {
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'task',
+										operation: 'getMany',
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -158,9 +193,26 @@ export const taskOperations: INodeProperties = {
 				request: {
 					method: 'POST',
 					url: '/tasks',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'task',
+										operation: 'create',
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -226,9 +278,28 @@ export const taskOperations: INodeProperties = {
 				request: {
 					method: 'PATCH',
 					url: '=/tasks/{{$parameter.taskId}}',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const taskId = this.getNodeParameter('taskId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'task',
+										operation: 'update',
+										itemId: taskId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -248,9 +319,28 @@ export const taskOperations: INodeProperties = {
 				request: {
 					method: 'DELETE',
 					url: '=/tasks/{{$parameter.taskId}}',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const taskId = this.getNodeParameter('taskId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'task',
+										operation: 'delete',
+										itemId: taskId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {

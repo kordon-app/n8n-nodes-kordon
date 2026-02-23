@@ -1,5 +1,5 @@
 import type { INodeProperties } from 'n8n-workflow';
-import { paginationRouting } from '../shared/utils';
+import { paginationRouting, createEnhancedError } from '../shared/utils';
 
 /**
  * User Group resource operations for Kordon node
@@ -25,6 +25,8 @@ export const userGroupOperations: INodeProperties = {
 				request: {
 					method: 'POST',
 					url: '/settings/user-groups',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 					body: {
 						user_group: {
 							name: '={{$parameter.name}}',
@@ -36,6 +38,21 @@ export const userGroupOperations: INodeProperties = {
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'user_group',
+										operation: 'create',
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -55,10 +72,26 @@ export const userGroupOperations: INodeProperties = {
 				request: {
 					method: 'GET',
 					url: '/settings/user-groups',
+					ignoreHttpStatusErrors: true,
 					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'user_group',
+										operation: 'getMany',
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {

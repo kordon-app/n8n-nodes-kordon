@@ -1,5 +1,5 @@
 import type { INodeProperties } from 'n8n-workflow';
-import { paginationRouting, handleArrayParameter } from '../shared/utils';
+import { paginationRouting, handleArrayParameter, createEnhancedError } from '../shared/utils';
 
 export const vendorOperations: INodeProperties = {
 	displayName: 'Operation',
@@ -21,9 +21,28 @@ export const vendorOperations: INodeProperties = {
 				request: {
 					method: 'GET',
 					url: '=/vendors/{{$parameter.vendorId}}',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const vendorId = this.getNodeParameter('vendorId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'vendor',
+										operation: 'get',
+										itemId: vendorId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -63,6 +82,7 @@ export const vendorOperations: INodeProperties = {
 				request: {
 					method: 'GET',
 					url: '/vendors',
+					ignoreHttpStatusErrors: true,
 					returnFullResponse: true,
 					qs: {
 						'state[]': '={{$parameter.options.state}}',
@@ -75,6 +95,18 @@ export const vendorOperations: INodeProperties = {
 				output: {
 					postReceive: [
 						async function (this, items, response) {
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'vendor',
+										operation: 'getMany',
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
 							// Log response details for debugging
 							this.logger.info('=== Kordon Vendor API Response ===');
 							this.logger.info('Status Code: ' + response.statusCode);
@@ -184,9 +216,26 @@ export const vendorOperations: INodeProperties = {
 				request: {
 					method: 'POST',
 					url: '/vendors',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'vendor',
+										operation: 'create',
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -256,9 +305,28 @@ export const vendorOperations: INodeProperties = {
 				request: {
 					method: 'PATCH',
 					url: '=/vendors/{{$parameter.vendorId}}',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const vendorId = this.getNodeParameter('vendorId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'vendor',
+										operation: 'update',
+										itemId: vendorId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -278,9 +346,28 @@ export const vendorOperations: INodeProperties = {
 				request: {
 					method: 'DELETE',
 					url: '=/vendors/{{$parameter.vendorId}}',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const vendorId = this.getNodeParameter('vendorId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'vendor',
+										operation: 'delete',
+										itemId: vendorId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -416,9 +503,28 @@ export const vendorOperations: INodeProperties = {
 				request: {
 					method: 'PATCH',
 					url: '=/vendors/{{$parameter.vendorId}}/connections',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const vendorId = this.getNodeParameter('vendorId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'vendor',
+										operation: 'updateConnections',
+										itemId: vendorId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {

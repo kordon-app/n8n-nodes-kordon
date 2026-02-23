@@ -1,5 +1,5 @@
 import type { INodeProperties } from 'n8n-workflow';
-import { paginationRouting } from '../shared/utils';
+import { paginationRouting, createEnhancedError } from '../shared/utils';
 
 export const labelOperations: INodeProperties = {
 	displayName: 'Operation',
@@ -21,9 +21,28 @@ export const labelOperations: INodeProperties = {
 				request: {
 					method: 'GET',
 					url: '=/labels/{{$parameter.labelId}}',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const labelId = this.getNodeParameter('labelId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'label',
+										operation: 'get',
+										itemId: labelId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -43,10 +62,26 @@ export const labelOperations: INodeProperties = {
 				request: {
 					method: 'GET',
 					url: '/labels',
+					ignoreHttpStatusErrors: true,
 					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'label',
+										operation: 'getMany',
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -96,9 +131,26 @@ export const labelOperations: INodeProperties = {
 				request: {
 					method: 'POST',
 					url: '/labels',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'label',
+										operation: 'create',
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -144,9 +196,28 @@ export const labelOperations: INodeProperties = {
 				request: {
 					method: 'PATCH',
 					url: '=/labels/{{$parameter.labelId}}',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const labelId = this.getNodeParameter('labelId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'label',
+										operation: 'update',
+										itemId: labelId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -166,9 +237,28 @@ export const labelOperations: INodeProperties = {
 				request: {
 					method: 'DELETE',
 					url: '=/labels/{{$parameter.labelId}}',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const labelId = this.getNodeParameter('labelId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'label',
+										operation: 'delete',
+										itemId: labelId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {

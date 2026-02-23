@@ -1,5 +1,5 @@
 import type { INodeProperties } from 'n8n-workflow';
-import { paginationRouting, handleArrayParameter } from '../shared/utils';
+import { paginationRouting, handleArrayParameter, createEnhancedError } from '../shared/utils';
 
 export const assetOperations: INodeProperties = {
 	displayName: 'Operation',
@@ -21,9 +21,28 @@ export const assetOperations: INodeProperties = {
 				request: {
 					method: 'GET',
 					url: '=/assets/{{$parameter.assetId}}',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const assetId = this.getNodeParameter('assetId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'asset',
+										operation: 'get',
+										itemId: assetId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -65,6 +84,7 @@ export const assetOperations: INodeProperties = {
 				request: {
 					method: 'GET',
 					url: '/assets',
+					ignoreHttpStatusErrors: true,
 					returnFullResponse: true,
 					qs: {
 						'state[]': '={{$parameter.options.state}}',
@@ -78,6 +98,18 @@ export const assetOperations: INodeProperties = {
 				output: {
 					postReceive: [
 						async function (this, items, response) {
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'asset',
+										operation: 'getMany',
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
 							// Log response details for debugging
 							this.logger.info('=== Kordon API Response ===');
 							this.logger.info('Status Code: ' + response.statusCode);
@@ -172,9 +204,26 @@ export const assetOperations: INodeProperties = {
 				request: {
 					method: 'POST',
 					url: '/assets',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'asset',
+										operation: 'create',
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -248,10 +297,26 @@ export const assetOperations: INodeProperties = {
 				request: {
 					method: 'PATCH',
 					url: '=/assets/{{$parameter.assetId}}',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
 						async function (this, items, response) {
+							const assetId = this.getNodeParameter('assetId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'asset',
+										operation: 'update',
+										itemId: assetId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
 							// Log response details for debugging
 							this.logger.info('=== Kordon API Update Asset Response ===');
 							this.logger.info('Status Code: ' + response.statusCode);
@@ -278,9 +343,28 @@ export const assetOperations: INodeProperties = {
 				request: {
 					method: 'DELETE',
 					url: '=/assets/{{$parameter.assetId}}',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const assetId = this.getNodeParameter('assetId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'asset',
+										operation: 'delete',
+										itemId: assetId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -416,9 +500,28 @@ export const assetOperations: INodeProperties = {
 				request: {
 					method: 'PATCH',
 					url: '=/assets/{{$parameter.assetId}}/connections',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const assetId = this.getNodeParameter('assetId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'asset',
+										operation: 'updateConnections',
+										itemId: assetId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {

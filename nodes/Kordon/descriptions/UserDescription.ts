@@ -1,5 +1,5 @@
 import type { INodeProperties } from 'n8n-workflow';
-import { paginationRouting } from '../shared/utils';
+import { paginationRouting, createEnhancedError } from '../shared/utils';
 
 /**
  * User resource operations for Kordon node
@@ -25,6 +25,8 @@ export const userOperations: INodeProperties = {
 				request: {
 					method: 'POST',
 					url: '/settings/users',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 					body: {
 						name: '={{$parameter.name}}',
 						email: '={{$parameter.email}}',
@@ -34,6 +36,21 @@ export const userOperations: INodeProperties = {
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'user',
+										operation: 'create',
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -53,9 +70,28 @@ export const userOperations: INodeProperties = {
 				request: {
 					method: 'GET',
 					url: '=/users/{{$parameter.userId}}',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const userId = this.getNodeParameter('userId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'user',
+										operation: 'get',
+										itemId: userId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -75,10 +111,26 @@ export const userOperations: INodeProperties = {
 				request: {
 					method: 'GET',
 					url: '/users',
+					ignoreHttpStatusErrors: true,
 					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'user',
+										operation: 'getMany',
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -113,9 +165,28 @@ export const userOperations: INodeProperties = {
 				request: {
 					method: 'PATCH',
 					url: '=/settings/users/{{$parameter.userId}}',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const userId = this.getNodeParameter('userId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'user',
+										operation: 'update',
+										itemId: userId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {

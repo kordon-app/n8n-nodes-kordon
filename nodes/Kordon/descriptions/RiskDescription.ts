@@ -1,5 +1,5 @@
 import type { INodeProperties } from 'n8n-workflow';
-import { paginationRouting, handleArrayParameter } from '../shared/utils';
+import { paginationRouting, handleArrayParameter, createEnhancedError } from '../shared/utils';
 
 /**
  * Risk resource operations for Kordon node
@@ -25,9 +25,28 @@ export const riskOperations: INodeProperties = {
 				request: {
 					method: 'GET',
 					url: '=/risks/{{$parameter.riskId}}',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const riskId = this.getNodeParameter('riskId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'risk',
+										operation: 'get',
+										itemId: riskId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -67,6 +86,7 @@ export const riskOperations: INodeProperties = {
 				request: {
 					method: 'GET',
 					url: '/risks',
+					ignoreHttpStatusErrors: true,
 					returnFullResponse: true,
 					qs: {
 						'state[]': '={{$parameter.options.state}}',
@@ -79,6 +99,21 @@ export const riskOperations: INodeProperties = {
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'risk',
+										operation: 'getMany',
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -156,9 +191,26 @@ export const riskOperations: INodeProperties = {
 				request: {
 					method: 'POST',
 					url: '/risks',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'risk',
+										operation: 'create',
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -230,10 +282,26 @@ export const riskOperations: INodeProperties = {
 				request: {
 					method: 'PATCH',
 					url: '=/risks/{{$parameter.riskId}}',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
 						async function (this, items, response) {
+							const riskId = this.getNodeParameter('riskId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'risk',
+										operation: 'update',
+										itemId: riskId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
 							// Log response details for debugging
 							this.logger.info('=== Kordon API Update Risk Response ===');
 							this.logger.info('Status Code: ' + response.statusCode);
@@ -260,9 +328,28 @@ export const riskOperations: INodeProperties = {
 				request: {
 					method: 'DELETE',
 					url: '=/risks/{{$parameter.riskId}}',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const riskId = this.getNodeParameter('riskId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'risk',
+										operation: 'delete',
+										itemId: riskId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -404,9 +491,28 @@ export const riskOperations: INodeProperties = {
 				request: {
 					method: 'PATCH',
 					url: '=/risks/{{$parameter.riskId}}/connections',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const riskId = this.getNodeParameter('riskId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'risk',
+										operation: 'updateConnections',
+										itemId: riskId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {

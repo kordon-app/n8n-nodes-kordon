@@ -1,5 +1,5 @@
 import type { INodeProperties } from 'n8n-workflow';
-import { paginationRouting, handleArrayParameter } from '../shared/utils';
+import { paginationRouting, handleArrayParameter, createEnhancedError } from '../shared/utils';
 
 export const businessProcessOperations: INodeProperties = {
 	displayName: 'Operation',
@@ -80,9 +80,26 @@ export const businessProcessOperations: INodeProperties = {
 				request: {
 					method: 'POST',
 					url: '/business-processes',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'business_process',
+										operation: 'create',
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -102,9 +119,28 @@ export const businessProcessOperations: INodeProperties = {
 				request: {
 					method: 'GET',
 					url: '=/business-processes/{{$parameter.businessProcessId}}',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const businessProcessId = this.getNodeParameter('businessProcessId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'business_process',
+										operation: 'get',
+										itemId: businessProcessId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -142,6 +178,7 @@ export const businessProcessOperations: INodeProperties = {
 				request: {
 					method: 'GET',
 					url: '/business-processes',
+					ignoreHttpStatusErrors: true,
 					returnFullResponse: true,
 					qs: {
 						'criticality[]': '={{$parameter.options.criticality}}',
@@ -151,6 +188,21 @@ export const businessProcessOperations: INodeProperties = {
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'business_process',
+										operation: 'getMany',
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -212,9 +264,28 @@ export const businessProcessOperations: INodeProperties = {
 				request: {
 					method: 'PATCH',
 					url: '=/business-processes/{{$parameter.businessProcessId}}',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const businessProcessId = this.getNodeParameter('businessProcessId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'business_process',
+										operation: 'update',
+										itemId: businessProcessId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -234,9 +305,28 @@ export const businessProcessOperations: INodeProperties = {
 				request: {
 					method: 'DELETE',
 					url: '=/business-processes/{{$parameter.businessProcessId}}',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const businessProcessId = this.getNodeParameter('businessProcessId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'business_process',
+										operation: 'delete',
+										itemId: businessProcessId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -366,9 +456,28 @@ export const businessProcessOperations: INodeProperties = {
 				request: {
 					method: 'PATCH',
 					url: '=/business-processes/{{$parameter.businessProcessId}}/connections',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const businessProcessId = this.getNodeParameter('businessProcessId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'business_process',
+										operation: 'updateConnections',
+										itemId: businessProcessId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {

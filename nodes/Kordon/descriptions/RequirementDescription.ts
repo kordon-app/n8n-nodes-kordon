@@ -1,5 +1,5 @@
 import type { INodeProperties } from 'n8n-workflow';
-import { paginationRouting, handleArrayParameter } from '../shared/utils';
+import { paginationRouting, handleArrayParameter, createEnhancedError } from '../shared/utils';
 
 /**
  * Requirement resource operations for Kordon node
@@ -25,9 +25,28 @@ export const requirementOperations: INodeProperties = {
 				request: {
 					method: 'GET',
 					url: '=/requirements/{{$parameter.requirementId}}',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const requirementId = this.getNodeParameter('requirementId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'requirement',
+										operation: 'get',
+										itemId: requirementId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -67,6 +86,7 @@ export const requirementOperations: INodeProperties = {
 				request: {
 					method: 'GET',
 					url: '/requirements',
+					ignoreHttpStatusErrors: true,
 					returnFullResponse: true,
 					qs: {
 						'frameworks[]': '={{$parameter.options.frameworkId}}',
@@ -78,6 +98,21 @@ export const requirementOperations: INodeProperties = {
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'requirement',
+										operation: 'getMany',
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -167,9 +202,26 @@ export const requirementOperations: INodeProperties = {
 				request: {
 					method: 'POST',
 					url: '/requirements',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'requirement',
+										operation: 'create',
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -249,9 +301,28 @@ export const requirementOperations: INodeProperties = {
 				request: {
 					method: 'PATCH',
 					url: '=/requirements/{{$parameter.requirementId}}',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const requirementId = this.getNodeParameter('requirementId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'requirement',
+										operation: 'update',
+										itemId: requirementId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -271,9 +342,28 @@ export const requirementOperations: INodeProperties = {
 				request: {
 					method: 'DELETE',
 					url: '=/requirements/{{$parameter.requirementId}}',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const requirementId = this.getNodeParameter('requirementId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'requirement',
+										operation: 'delete',
+										itemId: requirementId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -397,9 +487,28 @@ export const requirementOperations: INodeProperties = {
 				request: {
 					method: 'PATCH',
 					url: '=/requirements/{{$parameter.requirementId}}/connections',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const requirementId = this.getNodeParameter('requirementId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'requirement',
+										operation: 'updateConnections',
+										itemId: requirementId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {

@@ -1,5 +1,5 @@
 import type { INodeProperties } from 'n8n-workflow';
-import { paginationRouting, handleArrayParameter } from '../shared/utils';
+import { paginationRouting, handleArrayParameter, createEnhancedError } from '../shared/utils';
 
 export const controlOperations: INodeProperties = {
 	displayName: 'Operation',
@@ -21,9 +21,34 @@ export const controlOperations: INodeProperties = {
 				request: {
 					method: 'GET',
 					url: '=/controls/{{$parameter.controlId}}',
+					// Don't throw on HTTP errors - we'll handle them in postReceive
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							// Get the control ID for error context
+							const controlId = this.getNodeParameter('controlId', 0) as string;
+							
+							// Check if the response indicates an error
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								// API returned an error - throw enhanced error with full context
+								throw createEnhancedError(
+									{
+										resource: 'control',
+										operation: 'get',
+										itemId: controlId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -62,6 +87,7 @@ export const controlOperations: INodeProperties = {
 				request: {
 					method: 'GET',
 					url: '/controls',
+					ignoreHttpStatusErrors: true,
 					returnFullResponse: true,
 					qs: {
 						'kind[]': '={{$parameter.options.kind}}',
@@ -72,6 +98,21 @@ export const controlOperations: INodeProperties = {
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'control',
+										operation: 'getMany',
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -145,9 +186,26 @@ export const controlOperations: INodeProperties = {
 				request: {
 					method: 'POST',
 					url: '/controls',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'control',
+										operation: 'create',
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -219,10 +277,26 @@ export const controlOperations: INodeProperties = {
 				request: {
 					method: 'PATCH',
 					url: '=/controls/{{$parameter.controlId}}',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
 						async function (this, items, response) {
+							const controlId = this.getNodeParameter('controlId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'control',
+										operation: 'update',
+										itemId: controlId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
 							// Log response details for debugging
 							this.logger.info('=== Kordon API Update Control Response ===');
 							this.logger.info('Status Code: ' + response.statusCode);
@@ -249,9 +323,28 @@ export const controlOperations: INodeProperties = {
 				request: {
 					method: 'DELETE',
 					url: '=/controls/{{$parameter.controlId}}',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const controlId = this.getNodeParameter('controlId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'control',
+										operation: 'delete',
+										itemId: controlId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -393,9 +486,28 @@ export const controlOperations: INodeProperties = {
 				request: {
 					method: 'PATCH',
 					url: '=/controls/{{$parameter.controlId}}/connections',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const controlId = this.getNodeParameter('controlId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'control',
+										operation: 'updateConnections',
+										itemId: controlId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {

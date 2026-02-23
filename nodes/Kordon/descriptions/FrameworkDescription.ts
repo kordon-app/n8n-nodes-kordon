@@ -1,5 +1,5 @@
 import type { INodeProperties } from 'n8n-workflow';
-import { paginationRouting } from '../shared/utils';
+import { paginationRouting, createEnhancedError } from '../shared/utils';
 
 /**
  * Framework resource operations for Kordon node
@@ -25,6 +25,8 @@ export const frameworkOperations: INodeProperties = {
 				request: {
 					method: 'POST',
 					url: '/regulations',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 					body: {
 						regulation: {
 							title: '={{$parameter.title}}',
@@ -33,6 +35,21 @@ export const frameworkOperations: INodeProperties = {
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'regulation',
+										operation: 'create',
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -52,9 +69,28 @@ export const frameworkOperations: INodeProperties = {
 				request: {
 					method: 'GET',
 					url: '=/regulations/{{$parameter.frameworkId}}',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const frameworkId = this.getNodeParameter('frameworkId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'regulation',
+										operation: 'get',
+										itemId: frameworkId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -74,10 +110,26 @@ export const frameworkOperations: INodeProperties = {
 				request: {
 					method: 'GET',
 					url: '/regulations',
+					ignoreHttpStatusErrors: true,
 					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'regulation',
+										operation: 'getMany',
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -117,9 +169,28 @@ export const frameworkOperations: INodeProperties = {
 				request: {
 					method: 'PATCH',
 					url: '=/regulations/{{$parameter.frameworkId}}',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const frameworkId = this.getNodeParameter('frameworkId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'regulation',
+										operation: 'update',
+										itemId: frameworkId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {
@@ -139,9 +210,28 @@ export const frameworkOperations: INodeProperties = {
 				request: {
 					method: 'DELETE',
 					url: '=/regulations/{{$parameter.frameworkId}}',
+					ignoreHttpStatusErrors: true,
+					returnFullResponse: true,
 				},
 				output: {
 					postReceive: [
+						async function (this, items, response) {
+							const frameworkId = this.getNodeParameter('frameworkId', 0) as string;
+							const statusCode = response.statusCode || 0;
+							if (statusCode >= 400) {
+								throw createEnhancedError(
+									{
+										resource: 'regulation',
+										operation: 'delete',
+										itemId: frameworkId,
+										node: this.getNode(),
+									},
+									response,
+									this.continueOnFail(),
+								);
+							}
+							return items;
+						},
 						{
 							type: 'rootProperty',
 							properties: {

@@ -134,6 +134,7 @@ export const controlOperations: INodeProperties = {
 						async function (this, requestOptions) {
 							// Build the body from evaluated parameters to ensure expressions are resolved
 							const title = this.getNodeParameter('title') as string;
+							const managerId = this.getNodeParameter('managerId') as string;
 							const ownerId = this.getNodeParameter('ownerId') as string;
 							const kind = this.getNodeParameter('kind') as string;
 							const beginsAt = this.getNodeParameter('beginsAt') as string;
@@ -143,6 +144,7 @@ export const controlOperations: INodeProperties = {
 							// eslint-disable-next-line @typescript-eslint/no-explicit-any
 							const control: { [key: string]: any } = {
 								title: title,
+								manager_id: managerId,
 								owner_id: ownerId,
 								kind: kind,
 								begins_at: beginsAt,
@@ -250,6 +252,8 @@ export const controlOperations: INodeProperties = {
 											}
 										}
 									}
+									} else if (key === 'managerId') {
+										control['manager_id'] = updateFields[key];
 								} else if (key === 'ownerId') {
 									control['owner_id'] = updateFields[key];
 								} else if (key === 'beginsAt') {
@@ -657,6 +661,20 @@ export const controlFields: INodeProperties[] = [
 		description: 'The title of the control',
 	},
 	{
+		displayName: 'Manager ID',
+		name: 'managerId',
+		type: 'string',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['control'],
+				operation: ['create'],
+			},
+		},
+		default: '',
+		description: 'The ID of the user who manages the control',
+	},
+	{
 		displayName: 'Owner ID',
 		name: 'ownerId',
 		type: 'string',
@@ -889,6 +907,13 @@ export const controlFields: INodeProperties[] = [
 				typeOptions: {
 					multipleValues: true,
 				},
+			},
+			{
+				displayName: 'Manager ID',
+				name: 'managerId',
+				type: 'string',
+				default: '',
+				description: 'The ID of the user who manages the control',
 			},
 			{
 				displayName: 'Owner ID',

@@ -40,7 +40,7 @@ All **Get Many** operations support:
 
 Task operations also support:
 - **Connected Item ID** on create and update (mapped to `taskable_id`)
-- **Custom Fields** on create and update
+
 
 ## Credentials
 

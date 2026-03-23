@@ -5,4 +5,8 @@ dist
 *.bak
 *.bak2
 *.tmp
+.github/
+.vscode/
+TODO.md
+CHANGELOG.md
 DEVELOPMENT.md
